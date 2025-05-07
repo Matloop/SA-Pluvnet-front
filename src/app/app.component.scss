@@ -1,0 +1,14 @@
+@import '../styles/variables.scss';
+
+.toolbar {
+    background-color: $primary-color;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 100%;
+}
+
+body {
+    margin-top: 64px; /* Ajusta o conteúdo da página para não ficar escondido sob a navbar */
+  }

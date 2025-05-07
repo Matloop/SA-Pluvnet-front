@@ -1,0 +1,80 @@
+<p>user works!</p>
+<button (click)="logout()">Logout</button>
+<div>
+    <ul *ngIf="addresses && addresses.length > 0">
+      <li *ngFor="let addr of addresses">
+        <strong>ID:</strong> {{ addr.id }} <br>
+        <strong>CEP:</strong> {{ addr.cep }} <br>
+        <strong>Logradouro:</strong> {{ addr.logradouro }}, {{ addr.numero }} <br>
+        <span *ngIf="addr.complemento"><strong>Complemento:</strong> {{ addr.complemento }} <br></span>
+        <strong>Bairro:</strong> {{ addr.bairro }} <br>
+        <strong>Cidade/UF:</strong> {{ addr.cidade }}/{{ addr.uf }} <br>
+        <!-- CORREÇÃO: Usar 'addr.proprietario' conforme a interface -->
+        <strong *ngIf="addr.proprietario">Proprietário:</strong> {{ addr.proprietario?.nome }}
+        <!-- Assumindo que a interface Owner tem um campo 'nome'. Ajuste se necessário. -->
+      </li>
+    </ul>
+    <p *ngIf="!addresses || addresses.length === 0">
+      Nenhum endereço encontrado.
+    </p>
+  </div>
+  <div *ngIf=showForm>
+    <form [formGroup]="addressForm" (ngSubmit)="addAddress()">
+        <!-- ID (readonly or hidden) -->
+        <input formControlName="id" type="hidden" />
+      
+        <!-- CEP -->
+        <div>
+          <label for="cep">CEP:</label>
+          <input id="cep" formControlName="cep" type="text" />
+        </div>
+      
+        <!-- Logradouro -->
+        <div>
+          <label for="logradouro">Logradouro:</label>
+          <input id="logradouro" formControlName="logradouro" type="text" />
+        </div>
+      
+        <!-- Número -->
+        <div>
+          <label for="numero">Número:</label>
+          <input id="numero" formControlName="numero" type="text" />
+        </div>
+      
+        <!-- Complemento (opcional) -->
+        <div *ngIf="addressForm.get('complemento')">
+          <label for="complemento">Complemento:</label>
+          <input id="complemento" formControlName="complemento" type="text" />
+        </div>
+      
+        <!-- Bairro -->
+        <div>
+          <label for="bairro">Bairro:</label>
+          <input id="bairro" formControlName="bairro" type="text" />
+        </div>
+      
+        <!-- Cidade / UF -->
+        <div>
+          <label for="cidade">Cidade:</label>
+          <input id="cidade" formControlName="cidade" type="text" />
+        </div>
+        <div>
+          <label for="uf">UF:</label>
+          <input id="uf" formControlName="uf" type="text" />
+        </div>
+      
+        <!-- Proprietário -->
+        <div *ngIf="owners.length > 0">
+          <label for="proprietarioId">Proprietário:</label>
+          <select id="proprietarioId" formControlName="proprietarioId" required>
+            <option value="[0]" disabled selected></option>
+            <option *ngFor="let owner of owners" [value]="owner.id" >{{owner.nome}}</option>
+          </select>
+        </div>
+      
+        <!-- Submit -->
+        <button type="submit" [disabled]="addressForm.invalid">Salvar</button>
+      </form>
+      
+  </div>
+  <button (click)="displayForm()">Adicionar endereço: </button>

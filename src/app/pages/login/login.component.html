@@ -1,0 +1,34 @@
+<app-default-login-layout
+  title="Entre com sua conta ou registre-se"
+  primaryBtnText="Entrar"
+  secondayBtnText="Registre-se"
+  (submit)="submit()"
+  (navigate)="navigate()"
+  (googleSubmit)="loginWithGoogle()"
+  [disablePrimaryBtn]="!loginForm.valid"
+>
+  <form [formGroup]="loginForm" (ngSubmit)="submit()">
+    <app-primary-input
+      formControlName="email"
+      inputName="email"
+      type="email"
+      label="Email:"
+      placeholder="johndoe@gmail.com"
+    >
+      <img src="../../../assets/svg/email.svg" alt="Email icon" />
+    </app-primary-input>
+
+    <app-primary-input
+      formControlName="password"
+      inputName="password"
+      label="Senha:"
+      placeholder="Senha"
+      [type]="showPassword ? 'text' : 'password'"
+      [attr.aria-pressed]="showPassword"
+    >
+      <img src="../../../assets/svg/password.svg" alt="Password icon" />
+    </app-primary-input>
+
+    <span class="forgot-password">Esqueci minha senha</span>
+  </form>
+</app-default-login-layout>

@@ -1,0 +1,25 @@
+
+<app-default-login-layout 
+title="Se registre hoje! "
+    primaryBtnText="Entrar"
+    secondayBtnText="Faça login"
+    (submit)="submit()"
+    (navigate)="navigate()"
+    [disablePrimaryBtn]="!signupForm.valid">
+    
+<form [formGroup]="signupForm">
+    <app-primary-input formControlName="name" inputName="name" type="text" label="Seu nome: " placeholder="Carlos">
+        <img src="../../../assets/svg/email.svg" alt="">
+    </app-primary-input>
+    <app-primary-input formControlName="email" inputName="email" type="email" label="Email:" placeholder="johndoe@gmail.com">
+        <img src="../../../assets/svg/email.svg" alt="">
+    </app-primary-input>
+    <app-primary-input formControlName="password" inputName="password" type="password" label="SEnha: " >
+        <img src="../../../assets/svg/password.svg" alt="">
+    </app-primary-input>
+    <app-primary-input formControlName="passwordConfirm" inputName="passwordConfirm" type="password" label="Confirme sua senha: " >
+        <img src="../../../assets/svg/password.svg" alt="">
+    </app-primary-input>
+    <span>Esqueci minha senha</span>
+</form>
+</app-default-login-layout>

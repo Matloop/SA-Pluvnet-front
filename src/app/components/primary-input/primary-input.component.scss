@@ -1,0 +1,55 @@
+@import "../../../styles/variables.scss";
+
+.input-wrapper {
+    color :$text-color;
+    font-size: 16px;
+    text-align: start;
+
+    label {
+        margin-bottom: 10px;
+    }
+    .input-content {
+        width: 100%;
+        border-radius: 8px;
+        display: flex;
+        
+        .eye-icon{
+            appearance: none;          
+            -webkit-appearance: none;  
+            background: none;          
+            border: 0;                 
+            padding: 0;               
+            margin: 0;                 
+            cursor: pointer;           
+            display: inline-flex;      
+            align-items: center;
+            justify-content: center;
+                
+            outline: none;   
+            
+        }
+        .icon {
+            padding: 12px;
+            background-color: $primary-color;
+            border-radius: 0 8px 8px 0;
+        }
+
+        img{
+            height: 20px;
+            background-color: $primary-color;
+        }
+
+        input {
+            border: none;
+            border-radius: 8px 0 0 8px;
+            background-color:$gray-secondary-bg ;
+            font-size: 16px;
+            width: 100%;
+            padding: 12px 0 12px 20px;
+        }
+    }
+    
+    
+    
+
+}

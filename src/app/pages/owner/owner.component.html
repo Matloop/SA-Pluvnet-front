@@ -1,0 +1,73 @@
+<!-- Section to Display the List of Owners -->
+<div>
+    <h2>Lista de Proprietários</h2>
+    <ul *ngIf="owners && owners.length > 0">
+      <!-- Loop through each owner in the 'owners' array -->
+      <li *ngFor="let owner of owners">
+        <strong>ID:</strong> {{ owner.id }} <br>
+        <strong>Nome:</strong> {{ owner.nome }} <br>
+        <strong>Email:</strong> {{ owner.email }} <br>
+        <strong>Telefone:</strong> {{ owner.telefone }} <br>
+      </li>
+    </ul>
+    <!-- Message shown if the 'owners' array is empty or null -->
+    <p *ngIf="!owners || owners.length === 0">
+      Nenhum proprietário encontrado.
+    </p>
+  </div>
+  
+  <!-- Section for the Add/Edit Owner Form -->
+  <!-- This div is shown only when 'showOwnerForm' is true -->
+  <div *ngIf="showOwnerForm">
+    <!-- Dynamically set the title based on whether an ID exists (editing vs. adding) -->
+    <h2>{{ ownerForm.get('id')?.value ? 'Editar' : 'Adicionar' }} Proprietário</h2>
+  
+    <!-- The form uses Angular's Reactive Forms -->
+    <form [formGroup]="ownerForm" (ngSubmit)="saveOwner()">
+  
+      <!-- ID Field (usually hidden or read-only) -->
+      <!-- Hidden for adding new owners. Could be displayed as read-only when editing. -->
+      <input formControlName="id" type="hidden" />
+  
+      <!-- Nome Field -->
+      <div>
+        <label for="owner-nome">Nome:</label>
+        <input id="owner-nome" formControlName="nome" type="text" placeholder="Nome completo" required />
+        <!-- Basic validation message example -->
+        <div *ngIf="ownerForm.get('nome')?.invalid && (ownerForm.get('nome')?.dirty || ownerForm.get('nome')?.touched)" style="color: red;">
+          Nome é obrigatório.
+        </div>
+      </div>
+  
+      <!-- Email Field -->
+      <div>
+        <label for="owner-email">Email:</label>
+        <input id="owner-email" formControlName="email" type="email" placeholder="email@exemplo.com" required />
+         <!-- Basic validation message example -->
+         <div *ngIf="ownerForm.get('email')?.invalid && (ownerForm.get('email')?.dirty || ownerForm.get('email')?.touched)" style="color: red;">
+           <span *ngIf="ownerForm.get('email')?.errors?.['required']">Email é obrigatório.</span>
+           <span *ngIf="ownerForm.get('email')?.errors?.['email']">Formato de email inválido.</span>
+        </div>
+      </div>
+  
+      <!-- Telefone Field -->
+      <div>
+        <label for="owner-telefone">Telefone:</label>
+        <input id="owner-telefone" formControlName="telefone" type="tel" placeholder="(XX) XXXXX-XXXX" required />
+         <!-- Basic validation message example -->
+         <div *ngIf="ownerForm.get('telefone')?.invalid && (ownerForm.get('telefone')?.dirty || ownerForm.get('telefone')?.touched)" style="color: red;">
+          Telefone é obrigatório.
+        </div>
+      </div>
+  
+      <!-- Submit Button -->
+      <!-- Disabled if the form is invalid -->
+      <button type="submit" [disabled]="ownerForm.invalid">Salvar Proprietário</button>
+      
+  
+    </form>
+  </div>
+  
+  <!-- Button to trigger showing the form -->
+  <!-- This button is shown only when the form is hidden -->
+  <button *ngIf="!showOwnerForm" (click)="displayOwnerForm()">Adicionar Proprietário</button>
