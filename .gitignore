@@ -1,0 +1,45 @@
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/angular
+
+# Node modules
+/node_modules
+
+# Build output
+/build
+
+# Environment files
+/src/environments/environment.prod.ts
+/src/environments/environment.ts
+
+# IDEs e editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# NPM/Yarn
+package-lock.json
+yarn.lock
+
+# Test coverage
+/coverage
+
+# Misc
+*.tgz
+*.gz
+*.zip
+
+# Diretórios temporários
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
