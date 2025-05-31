@@ -1,13 +1,13 @@
 import { Component, forwardRef, Input } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
-import { LoginComponent } from "../../pages/login/login.component";
 import { CommonModule } from '@angular/common';
 
-type InputTypes = "text" | "email" | "password"
+type InputTypes = "text" | "email" | "password";
+
 @Component({
   selector: 'app-primary-input',
   standalone: true,
-  imports: [ReactiveFormsModule,CommonModule,FormsModule],
+  imports: [ReactiveFormsModule, CommonModule, FormsModule],
   providers:[
     {
       provide: NG_VALUE_ACCESSOR,
@@ -19,41 +19,46 @@ type InputTypes = "text" | "email" | "password"
   styleUrl: './primary-input.component.scss'
 })
 export class PrimaryInputComponent implements ControlValueAccessor {
+  @Input() type: InputTypes = "text";
+  @Input() placeholder: string = "";
+  @Input() label : string = "";
+  @Input() inputName : string = "";
+
+  // Ensure these paths are correct for your project structure
+  @Input() openEyeIcon: string = "assets/svg/open-eye.svg";
+  @Input() closeEyeIcon: string = "assets/svg/closed-eye.svg";
+
+  value: string = '';
+  showPassword = false;
+
+  // ControlValueAccessor methods
+  onChange: any = () => {};
+  onTouched: any = () => {};
+
   writeValue(obj: any): void {
     this.value = obj;
   }
+
+  registerOnChange(fn: any): void {
+    this.onChange = fn;
+  }
+
   registerOnTouched(fn: any): void {
     this.onTouched = fn;
   }
-  showPassword = false;  
-  @Input() type: InputTypes = "text";
-  @Input() placeholder: string = "";
-  @Input() label : string = "oi";
-  @Input() inputName : string = "";
-  openEyeIcon: string = "assets/svg/open-eye.svg";
-  closeEyeIcon: string = "assets/svg/closed-eye.svg";
 
-  value: string = ''
-  onChange: any = () => {}
-  onTouched: any = () => {}
+  setDisabledState?(isDisabled: boolean): void {
+    // You can implement this if you need to disable the input programmatically
+  }
 
   onInput(event: Event){
-    const value = (event.target as HTMLInputElement).value
-    this.onChange(value)
-  }
-
-  registerOnChange(fn: any): void {
-      this.onChange = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-  }
-  get eyeIconClass(): string {
-    let eyePath: string = "assets/svg/close-eye.svg";
-    return this.showPassword ? eyePath + 'open-eye.svg' : eyePath + 'closed-eye.svg';
+    const value = (event.target as HTMLInputElement).value;
+    this.value = value; // Keep internal value in sync for display
+    this.onChange(value);
+    this.onTouched();
   }
 
   changeShowPassword(){
-    this.showPassword = !this.showPassword
+    this.showPassword = !this.showPassword;
   }
 }

@@ -1,5 +1,5 @@
 import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { PreloadAllModules, provideRouter, withComponentInputBinding, withPreloading } from '@angular/router';
 import {provideAnimations} from '@angular/platform-browser/animations'
 import { routes } from './app.routes';
 import { provideHttpClient, withFetch } from '@angular/common/http';
@@ -7,9 +7,15 @@ import { provideToastr } from 'ngx-toastr';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideRouter(routes),
+  providers: [provideRouter(routes,withPreloading(PreloadAllModules),withComponentInputBinding()),
     provideHttpClient(withFetch()),
-    provideToastr(),
+    provideToastr(
+      {
+      timeOut: 5000,
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+    }
+    ),
     provideAnimations(), provideAnimationsAsync(),
   ]
 };

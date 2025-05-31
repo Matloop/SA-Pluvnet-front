@@ -1,8 +1,10 @@
-$primary-color:#29146f;
-$secondary-color:#e57717;
-$gray-bg:#C2C2C2;
-$gray-secondary-bg:#F1F3F6;
-$text-color:#555555;
-
-
-
+// Example content for styles/variables.scss
+$primary-color: #3A006D; // Dark purple from your design
+$primary-text-color: #FFFFFF; // White
+$secondary-text-color: #555555; // Dark gray for labels, secondary text
+$text-color: #333333; // Main text color
+$page-bg: #F4F4F8; // Very light gray/off-white for page background
+$form-bg: #FFFFFF; // White for the form card
+$input-bg: #F0F0F0; // Light gray for input backgrounds
+$light-gray-divider: #DDDDDD; // For "OU" divider lines and input borders
+$error-color: #E74C3C; // Red for error messages (if you implement custom ones)

@@ -1,10 +1,9 @@
 <app-default-login-layout
-  title="Entre com sua conta ou registre-se"
-  primaryBtnText="Entrar"
-  secondayBtnText="Registre-se"
+  title="Faça login com sua conta"
+  primaryBtnText="Faça login"
+  secondayBtnText="Faça seu cadastro"
   (submit)="submit()"
   (navigate)="navigate()"
-  (googleSubmit)="loginWithGoogle()"
   [disablePrimaryBtn]="!loginForm.valid"
 >
   <form [formGroup]="loginForm" (ngSubmit)="submit()">
@@ -12,23 +11,22 @@
       formControlName="email"
       inputName="email"
       type="email"
-      label="Email:"
-      placeholder="johndoe@gmail.com"
+      label="Email"
+      placeholder="alex@email.com"
     >
-      <img src="../../../assets/svg/email.svg" alt="Email icon" />
+      <img src="assets/svg/email.svg" alt="Email icon" /> <!-- Update path if needed -->
     </app-primary-input>
 
     <app-primary-input
       formControlName="password"
       inputName="password"
-      label="Senha:"
-      placeholder="Senha"
-      [type]="showPassword ? 'text' : 'password'"
-      [attr.aria-pressed]="showPassword"
+      label="Senha"
+      placeholder="Enter your password"
+      type="password"
     >
-      <img src="../../../assets/svg/password.svg" alt="Password icon" />
+      <img src="assets/svg/password.svg" alt="Password icon" /> <!-- Update path if needed -->
     </app-primary-input>
 
-    <span class="forgot-password">Esqueci minha senha</span>
+    <span class="forgot-password" (click)="navigateToForgotPassword()">Esqueceu sua senha?</span>
   </form>
 </app-default-login-layout>

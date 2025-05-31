@@ -1,16 +1,56 @@
-@import "../../../styles/variables.scss";
+@import "../../../styles/variables.scss"; // Adjust path as needed
 
-form{
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    margin-bottom: 34px;
+form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px; // Spacing between input fields
 }
 
-span{
-    font-size: 14px;
-    text-decoration: underline;
-    color: $secondary-color;
-    text-align: right;
+// Styles for the radio button group and static labels
+.form-group.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+
+  .form-label-static {
+    font-size: 13px;
+    color: $secondary-text-color;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .radio-options {
+    display: flex;
+    gap: 25px; // Space between Sim and Não options
+    padding-top: 4px; // Small space below label
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      input[type="radio"] {
+        accent-color: $primary-color; // Styles the radio button itself
+        width: 15px;
+        height: 15px;
+        cursor: pointer;
+      }
+
+      label {
+        font-size: 14px;
+        color: $text-color;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+// Optional: Error message styling (if you add inline errors)
+.form-error {
+    color: $error-color;
+    font-size: 12px;
+    margin-top: -10px; // Adjust to position below the relevant field
+    margin-bottom: 5px;
 }

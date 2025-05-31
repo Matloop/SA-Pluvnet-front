@@ -1,55 +1,88 @@
-@import "../../../styles/variables.scss";
+@import "../../../styles/variables.scss"; // Adjust path as needed
 
 .input-wrapper {
-    color :$text-color;
-    font-size: 16px;
-    text-align: start;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px; // Space between label and input-group
 
-    label {
-        margin-bottom: 10px;
+  .form-label {
+    font-size: 13px; // Smaller label
+    color: $secondary-text-color;
+    font-weight: 500;
+    text-align: left;
+    line-height: 1.4;
+  }
+
+  .input-group {
+    display: flex;
+    align-items: stretch;
+    position: relative;
+    border-radius: 8px; // Apply border-radius to the group
+    border: 1px solid $light-gray-divider; // Border around the whole group
+    background-color: $input-bg; // Background for the whole group
+
+    &:focus-within { // Style when any child input is focused
+      border-color: $primary-color;
+      box-shadow: 0 0 0 1px $primary-color; // Subtle focus outline
     }
-    .input-content {
-        width: 100%;
-        border-radius: 8px;
-        display: flex;
-        
-        .eye-icon{
-            appearance: none;          
-            -webkit-appearance: none;  
-            background: none;          
-            border: 0;                 
-            padding: 0;               
-            margin: 0;                 
-            cursor: pointer;           
-            display: inline-flex;      
-            align-items: center;
-            justify-content: center;
-                
-            outline: none;   
-            
-        }
-        .icon {
-            padding: 12px;
-            background-color: $primary-color;
-            border-radius: 0 8px 8px 0;
-        }
 
-        img{
-            height: 20px;
-            background-color: $primary-color;
-        }
+    .form-control {
+      flex-grow: 1;
+      border: none; // Remove individual input border
+      border-radius: 8px 0 0 8px; // Rounded corners on the left, if not overridden by group
+      background-color: transparent; // Input bg is now on group
+      font-size: 15px;
+      padding: 10px 12px; // Adjusted padding
+      color: $text-color;
+      outline: none;
 
-        input {
-            border: none;
-            border-radius: 8px 0 0 8px;
-            background-color:$gray-secondary-bg ;
-            font-size: 16px;
-            width: 100%;
-            padding: 12px 0 12px 20px;
-        }
+      &[type="password"] {
+        padding-right: 35px; // Make space for the eye icon
+      }
     }
-    
-    
-    
 
+    .btn-toggle-password {
+      position: absolute;
+      right: 50px; // Position before the main icon container (adjust if icon container width changes)
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      padding: 0; // Removed padding
+      margin: 0 5px; // Added margin for spacing
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      height: 100%; // Ensure it's clickable across the input height
+
+      .eye-icon {
+        height: 18px; // Adjust size
+        width: 18px;
+        opacity: 0.5;
+      }
+      &:hover .eye-icon {
+        opacity: 0.8;
+      }
+    }
+
+    .icon-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px; // Adjusted padding
+      min-width: 45px; // Ensure consistent width
+      background-color: $primary-color;
+      border-radius: 0 7px 7px 0; // Match group radius (8px - 1px border)
+      // No border needed here as the group has the border
+
+      ::ng-deep img { // To style the SVG passed via ng-content
+        height: 18px; // Adjust size
+        width: 18px;
+        filter: brightness(0) invert(1); // Makes the SVG icon white
+      }
+    }
+  }
 }

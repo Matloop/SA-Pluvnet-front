@@ -1,31 +1,31 @@
 <div class="input-wrapper">
-    <label [for]="inputName">{{ label }}</label>
-    <div class="input-content">
-      <input
-        [id]="inputName"
-        [type]="showPassword ? 'text' : type"
-        [value]="value"
-        (input)="onInput($event)"
-        [placeholder]="placeholder"
-        class="form-control"
-        
+  <label [for]="inputName" class="form-label">{{ label }}</label>
+  <div class="input-group">
+    <input
+      [id]="inputName"
+      [name]="inputName"
+      [type]="showPassword && type === 'password' ? 'text' : type"
+      [value]="value"
+      (input)="onInput($event)"
+      (blur)="onTouched()"
+      [placeholder]="placeholder"
+      class="form-control"
+    />
+    <button
+      type="button"
+      (click)="changeShowPassword()"
+      class="btn-toggle-password"
+      *ngIf="type === 'password'"
+      aria-label="Mostrar ou ocultar senha"
+    >
+      <img
+        [src]="showPassword ? openEyeIcon : closeEyeIcon"
+        alt="Toggle password visibility"
+        class="eye-icon"
       />
-      <button
-        type="button"
-        (click)="changeShowPassword()"
-        class="btn-toggle-password"
-        aria-label="Mostrar ou ocultar senha"
-        *ngIf="type === 'password'"
-      >
-        <img
-          [src]="showPassword ? openEyeIcon : closeEyeIcon"
-          alt="Toggle password visibility"
-          class="eye-icon"
-        />
-      </button>
-      <div class="icon">
-        <ng-content></ng-content>
-      </div>
+    </button>
+    <div class="icon-container">
+      <ng-content></ng-content> <!-- This is where email.svg or password.svg will be projected -->
     </div>
   </div>
-  
+</div>

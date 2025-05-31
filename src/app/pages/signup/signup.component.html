@@ -1,25 +1,81 @@
+<!-- signup.component.html -->
+<app-default-login-layout
+  title="Crie sua conta"
+  primaryBtnText="Faça seu cadastro"
+  secondayBtnText="Já tem uma conta? Faça login"
+  (submit)="submit()"
+  (navigate)="navigate()"
+  [disablePrimaryBtn]="!signupForm.valid"
+>
+  <form [formGroup]="signupForm" (ngSubmit)="submit()">
+    <app-primary-input
+      formControlName="name"
+      inputName="name"
+      type="text"
+      label="Nome*"
+      placeholder="John Doe"
+    >
+      <img src="assets/svg/email.svg" alt="Nome icon" />
+    </app-primary-input>
 
-<app-default-login-layout 
-title="Se registre hoje! "
-    primaryBtnText="Entrar"
-    secondayBtnText="Faça login"
-    (submit)="submit()"
-    (navigate)="navigate()"
-    [disablePrimaryBtn]="!signupForm.valid">
-    
-<form [formGroup]="signupForm">
-    <app-primary-input formControlName="name" inputName="name" type="text" label="Seu nome: " placeholder="Carlos">
-        <img src="../../../assets/svg/email.svg" alt="">
+    <app-primary-input
+      formControlName="email"
+      inputName="email"
+      type="email"
+      label="Email*"
+      placeholder="alex@email.com"
+    >
+      <img src="assets/svg/email.svg" alt="Email icon" />
     </app-primary-input>
-    <app-primary-input formControlName="email" inputName="email" type="email" label="Email:" placeholder="johndoe@gmail.com">
-        <img src="../../../assets/svg/email.svg" alt="">
+
+    <div class="form-group radio-group">
+      <label class="form-label-static">Proprietário do Pluviômetro ?*</label>
+      <div class="radio-options">
+        <div class="radio-option">
+          <input type="radio" id="proprietarioSim"
+                 name="userRole"   পী CORRIGIDO
+                 value="OWNER"
+                 formControlName="userRole" />
+          <label for="proprietarioSim">Sim</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="proprietarioNao"
+                 name="userRole"  
+                 value="User"
+                 formControlName="userRole" />
+          <label for="proprietarioNao">Não</label>
+        </div>
+      </div>
+    </div>
+
+    <app-primary-input
+      inputName="cpf"
+      type="text"
+      label="CPF*"
+      placeholder="000.000.000-00"
+      formControlName="cpf"
+    >
+      <img src="assets/svg/email.svg" alt="CPF icon" />
     </app-primary-input>
-    <app-primary-input formControlName="password" inputName="password" type="password" label="SEnha: " >
-        <img src="../../../assets/svg/password.svg" alt="">
+
+    <app-primary-input
+      formControlName="password"
+      inputName="password"
+      type="password"
+      label="Senha*"
+      placeholder="Insira sua senha"
+    >
+      <img src="assets/svg/password.svg" alt="Password icon" />
     </app-primary-input>
-    <app-primary-input formControlName="passwordConfirm" inputName="passwordConfirm" type="password" label="Confirme sua senha: " >
-        <img src="../../../assets/svg/password.svg" alt="">
+
+    <app-primary-input
+      formControlName="passwordConfirm"
+      inputName="passwordConfirm"
+      type="password"
+      label="Insira novamente*"
+      placeholder="Insira sua senha novamente"
+    >
+      <img src="assets/svg/password.svg" alt="Password confirm icon" />
     </app-primary-input>
-    <span>Esqueci minha senha</span>
-</form>
+  </form>
 </app-default-login-layout>
