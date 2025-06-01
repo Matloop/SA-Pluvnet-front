@@ -32,7 +32,7 @@ export class AppComponent implements OnInit {
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd),
       map(e => (e as NavigationEnd).urlAfterRedirects),
-      map(url => url !== '/login')        // simples: só mostra se não for /login
+      map(url => url !== '/login' && url !== '/signup'),    // simples: só mostra se não for /login
     ).subscribe(show => this.showNavbar = show);
   }
 
