@@ -5,7 +5,7 @@
   secondayBtnText="Já tem uma conta? Faça login"
   (submit)="submit()"
   (navigate)="navigate()"
-  [disablePrimaryBtn]="!signupForm.valid"
+  [disablePrimaryBtn]="signupForm.invalid || signupForm.pending"
 >
   <form [formGroup]="signupForm" (ngSubmit)="submit()">
     <app-primary-input
@@ -17,6 +17,12 @@
     >
       <img src="assets/svg/email.svg" alt="Nome icon" />
     </app-primary-input>
+    <!-- Mensagens de erro para Nome -->
+    <div class="form-error" *ngIf="signupForm.get('name')?.invalid && signupForm.get('name')?.touched">
+       <div *ngIf="signupForm.get('name')?.hasError('required')">O nome é obrigatório.</div>
+       <div *ngIf="signupForm.get('name')?.hasError('minlength')">O nome deve ter pelo menos 3 caracteres.</div>
+    </div>
+
 
     <app-primary-input
       formControlName="email"
@@ -27,36 +33,54 @@
     >
       <img src="assets/svg/email.svg" alt="Email icon" />
     </app-primary-input>
+    <!-- Mensagens de erro para Email -->
+    <div class="form-error" *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched">
+        <div *ngIf="signupForm.get('email')?.hasError('required')">O e-mail é obrigatório.</div>
+        <div *ngIf="signupForm.get('email')?.hasError('email')">Formato de e-mail inválido.</div>
+        <div *ngIf="signupForm.get('email')?.hasError('alreadyExists')">Este e-mail já está cadastrado.</div>
+    </div>
+
 
     <div class="form-group radio-group">
       <label class="form-label-static">Proprietário do Pluviômetro ?*</label>
       <div class="radio-options">
         <div class="radio-option">
-          <input type="radio" id="proprietarioSim"
-                 name="userRole"   পী CORRIGIDO
-                 value="OWNER"
-                 formControlName="userRole" />
+          <input type="radio" id="proprietarioSim" name="userRole" value="OWNER" formControlName="userRole" />
           <label for="proprietarioSim">Sim</label>
         </div>
         <div class="radio-option">
-          <input type="radio" id="proprietarioNao"
-                 name="userRole"  
-                 value="User"
-                 formControlName="userRole" />
+          <input type="radio" id="proprietarioNao" name="userRole" value="USER" formControlName="userRole" />
           <label for="proprietarioNao">Não</label>
         </div>
       </div>
     </div>
+    <!-- Mensagem de erro para userRole -->
+     <div class="form-error" *ngIf="signupForm.get('userRole')?.invalid && signupForm.get('userRole')?.touched">
+       <div *ngIf="signupForm.get('userRole')?.hasError('required')">Selecione se é proprietário.</div>
+    </div>
+
 
     <app-primary-input
       inputName="cpf"
       type="text"
       label="CPF*"
-      placeholder="000.000.000-00"
+      placeholder="000.000.000-00 ou 00000000000"
       formControlName="cpf"
     >
       <img src="assets/svg/email.svg" alt="CPF icon" />
     </app-primary-input>
+    <!-- Mensagens de erro para CPF -->
+    <div class="form-error" *ngIf="signupForm.get('cpf')?.invalid && signupForm.get('cpf')?.touched">
+      <div *ngIf="signupForm.get('cpf')?.hasError('required')">O CPF é obrigatório.</div>
+      <div *ngIf="signupForm.get('cpf')?.hasError('cpfBasicFormat')">CPF deve ter 11 dígitos numéricos.</div>
+      <!-- CORRIGIDO: Acessar a mensagem do erro específico. -->
+      <div *ngIf="signupForm.get('cpf')?.hasError('cpfApiInvalid')">{{ signupForm.get('cpf')?.errors?.['cpfApiInvalid'] }}</div>
+      <div *ngIf="signupForm.get('cpf')?.hasError('cpfApiSystemError')">{{ signupForm.get('cpf')?.errors?.['cpfApiSystemError'] }}</div>
+    </div>
+    <div class="form-info" *ngIf="signupForm.get('cpf')?.pending">
+      Validando CPF...
+    </div>
+
 
     <app-primary-input
       formControlName="password"
@@ -67,6 +91,12 @@
     >
       <img src="assets/svg/password.svg" alt="Password icon" />
     </app-primary-input>
+    <!-- Mensagens de erro para Senha -->
+     <div class="form-error" *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched">
+       <div *ngIf="signupForm.get('password')?.hasError('required')">A senha é obrigatória.</div>
+       <div *ngIf="signupForm.get('password')?.hasError('minlength')">A senha deve ter pelo menos 6 caracteres.</div>
+    </div>
+
 
     <app-primary-input
       formControlName="passwordConfirm"
@@ -77,5 +107,14 @@
     >
       <img src="assets/svg/password.svg" alt="Password confirm icon" />
     </app-primary-input>
+    <!-- Mensagens de erro para Confirmação de Senha -->
+    <div class="form-error" *ngIf="signupForm.get('passwordConfirm')?.touched"> <!-- Mostra se tocado, mesmo que não seja 'invalid' ainda por outros erros -->
+      <div *ngIf="signupForm.get('passwordConfirm')?.hasError('required')">A confirmação de senha é obrigatória.</div>
+      <div *ngIf="signupForm.get('passwordConfirm')?.hasError('mismatch')">As senhas não coincidem.</div>
+    </div>
+     <!-- Mensagem de erro no nível do FormGroup para senhas (se passwordsMismatch foi retornado) -->
+     <!-- <div class="form-error" *ngIf="signupForm.hasError('passwordsMismatch') && signupForm.get('passwordConfirm')?.touched">
+        (Debug) As senhas não coincidem (erro de grupo).
+     </div> -->
   </form>
 </app-default-login-layout>
