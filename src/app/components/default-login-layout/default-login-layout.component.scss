@@ -19,10 +19,9 @@ main {
 }
 
 .form-container {
-  .logopluv {
-    img{
-      height: 50px;
-    }
+  img.logo{
+    width: 300px;
+    height: 100px;  
   }
   background-color: $form-bg;
   padding: 35px 45px; // Adjusted padding
