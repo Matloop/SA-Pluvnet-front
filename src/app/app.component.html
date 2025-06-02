@@ -1,51 +1,51 @@
-<mat-sidenav-container class="app-container">
+<!-- app.component.html -->
 
-  <!-- Sidebar Navigation -->
-  <mat-sidenav #sidenav mode="side" opened class="app-sidenav">
-    <div class="sidenav-header">
-      <!-- Your PluvNet Logo -->
-      <img src="../assets/svg/logopluv.svg" alt="PluvNet Logo" class="logo">
-      
-    </div>
-    <mat-nav-list>
-      <a mat-list-item routerLink="/owner" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>view_list</mat-icon> <!-- Or an icon for pluviometers -->
-        <span matListItemTitle>Pluviômetros</span>
-      </a>
-      <a mat-list-item routerLink="/calendario" routerLinkActive="active-link"> <!-- Assuming a /calendario route -->
-        <mat-icon matListItemIcon>calendar_today</mat-icon>
-        <span matListItemTitle>Calendário</span>
-      </a>
-      <!-- Add other global navigation items here if they belong in the sidebar -->
-    </mat-nav-list>
-  </mat-sidenav>
+<ng-container *ngIf="showAppShell; else authLayout">
+  <!-- This is the main application shell -->
+  <mat-sidenav-container class="app-container">
+    <!-- Sidebar Navigation -->
+    <mat-sidenav #sidenav mode="side" opened class="app-sidenav">
+      <div class="sidenav-header">
+        <img src="../assets/svg/logopluv.svg" alt="PluvNet Logo" class="logo">
+      </div>
+      <mat-nav-list>
+        <a mat-list-item routerLink="/owner" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>view_list</mat-icon>
+          <span matListItemTitle>Pluviômetros</span>
+        </a>
+        <a mat-list-item routerLink="/calendario" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>calendar_today</mat-icon>
+          <span matListItemTitle>Calendário</span>
+        </a>
+      </mat-nav-list>
+    </mat-sidenav>
 
-  <!-- Main Content Area -->
-  <mat-sidenav-content class="app-sidenav-content">
-    <!-- Top Toolbar specific to the content area (User, Notifications) -->
-    <mat-toolbar class="content-toolbar">
-      <span class="spacer"></span> <!-- Pushes items to the right -->
+    <!-- Main Content Area -->
+    <mat-sidenav-content class="app-sidenav-content">
+      <mat-toolbar class="content-toolbar">
+        <span class="spacer"></span>
+        <button mat-icon-button matTooltip="Notificações">
+          <mat-icon>notifications</mat-icon>
+        </button>
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
+          <img src="https://i.pravatar.cc/30?u=max.augusto" alt="User Avatar" class="user-avatar">
+          <span>Max Augusto</span>
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item routerLink="/profile">Perfil</button>
+          <button mat-menu-item (click)="logout()">Sair</button>
+        </mat-menu>
+      </mat-toolbar>
 
-      <button mat-icon-button matTooltip="Notificações">
-        <mat-icon>notifications</mat-icon> <!-- Bell Icon -->
-      </button>
+      <div class="page-content-wrapper">
+        <router-outlet></router-outlet> <!-- Outlet for shelled content -->
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</ng-container>
 
-      <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
-        <img src="https://i.pravatar.cc/30?u=max.augusto" alt="User Avatar" class="user-avatar"> <!-- Placeholder Avatar -->
-        <span>Max Augusto</span>
-        <mat-icon>arrow_drop_down</mat-icon>
-      </button>
-      <mat-menu #userMenu="matMenu">
-        <button mat-menu-item routerLink="/profile">Perfil</button>
-        <button mat-menu-item (click)="logout()">Sair</button>
-      </mat-menu>
-    </mat-toolbar>
-
-    <!-- This is where your page components (like OwnerComponent) will be rendered -->
-    <div class="page-content-wrapper">
-      <router-outlet></router-outlet>
-    </div>
-
-  </mat-sidenav-content>
-
-</mat-sidenav-container>
+<ng-template #authLayout>
+  <!-- This is where components like Login, Signup will render without the shell -->
+  <router-outlet></router-outlet> <!-- Outlet for non-shelled content (login, signup) -->
+</ng-template>
