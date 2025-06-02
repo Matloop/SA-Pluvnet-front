@@ -44,7 +44,12 @@ export class PluviometroFormComponent implements OnInit {
       proprietarioNome: [data.pluviometro?.proprietarioNome || '', Validators.required],
       email: [data.pluviometro?.email || '', [Validators.required, Validators.email]],
       descricao: [data.pluviometro?.descricao || '', Validators.required],
-      localizacao: [data.pluviometro?.localizacao || '', Validators.required]
+      localizacao: [data.pluviometro?.localizacao || '', Validators.required],
+      cidade: [data.pluviometro?.cidade || '', Validators.required],
+      bairro: [data.pluviometro?.bairro || '', Validators.required],
+      rua: [data.pluviometro?.rua || '', Validators.required],
+      numero: [data.pluviometro?.numero || '', Validators.required],
+      complemento: [data.pluviometro?.complemento || ''],
       // Add proprietarioAvatarUrl if you intend to allow setting/changing it in the form
     });
   }

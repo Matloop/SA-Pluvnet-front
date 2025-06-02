@@ -37,35 +37,35 @@
     </mat-form-field>
     <mat-form-field appearance="outline">
         <mat-label>Cidade</mat-label>
-        <input matInput formControlName="localizacao" required>
-        <mat-error *ngIf="pluviometroForm.get('localizacao')?.hasError('required')">
-          Localização é obrigatória.
+        <input matInput formControlName="cidade" required>
+        <mat-error *ngIf="pluviometroForm.get('cidade')?.hasError('required')">
+          Cidade é obrigatória.
         </mat-error>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Bairro</mat-label>
-        <input matInput formControlName="localizacao" required>
-        <mat-error *ngIf="pluviometroForm.get('localizacao')?.hasError('required')">
+        <input matInput formControlName="bairro" required>
+        <mat-error *ngIf="pluviometroForm.get('bairro')?.hasError('required')">
           Bairro é obrigatório.
         </mat-error>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Rua</mat-label>
-        <input matInput formControlName="localizacao" required>
-        <mat-error *ngIf="pluviometroForm.get('localizacao')?.hasError('required')">
+        <input matInput formControlName="rua" required>
+        <mat-error *ngIf="pluviometroForm.get('rua')?.hasError('required')">
           Rua é obrigatória.
         </mat-error>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Número da propriedade</mat-label>
-        <input matInput formControlName="localizacao" required>
-        <mat-error *ngIf="pluviometroForm.get('localizacao')?.hasError('required')">
+        <input matInput formControlName="numero" required>
+        <mat-error *ngIf="pluviometroForm.get('numero')?.hasError('required')">
           Número é obrigatório.
         </mat-error>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Complemento</mat-label>
-        <input matInput formControlName="localizacao" required>
+        <input matInput formControlName="complemento" >
       </mat-form-field>
   </form>
 </mat-dialog-content>

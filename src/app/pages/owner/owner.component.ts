@@ -17,6 +17,11 @@ export interface PluviometroElement {
   email: string;
   descricao: string;
   localizacao: string;
+  cidade: string;
+  bairro: string;
+  rua: string;
+  numero: string;
+  complemento: string;
   localizacaoIcon: string;
 }
 
@@ -24,9 +29,14 @@ const ELEMENT_DATA: PluviometroElement[] = [
   {
     id: 1,
     proprietarioNome: 'Max Augusto',
-    email: 'lindsey.stroud@gmail.com',
+    email: 'max.augusto@gmail.com',
     descricao: 'Descrição Padrão 1',
-    localizacao: 'Rua 3',
+    localizacao: 'Rua 3, Bairro Central, Blumenau',
+    cidade: 'Blumenau',
+    bairro: 'Centro',
+    rua: 'Rua 3',
+    numero: '125',
+    complemento: 'Casa 1',
     localizacaoIcon: 'map',
   },
   {
@@ -35,7 +45,12 @@ const ELEMENT_DATA: PluviometroElement[] = [
     proprietarioAvatarUrl: 'https://i.pravatar.cc/40?u=sarah.brown@example.com',
     email: 'sarah.brown@gmail.com',
     descricao: 'Pluviômetro do Jardim',
-    localizacao: 'Rua 5',
+    localizacao: 'Rua 5, Bairro Itoupava, Blumenau',
+    cidade: 'Blumenau',
+    bairro: 'Itoupava',
+    rua: 'Rua 5',
+    numero: '542',
+    complemento: 'Apartamento 302',
     localizacaoIcon: 'map',
   },
   {
@@ -44,7 +59,12 @@ const ELEMENT_DATA: PluviometroElement[] = [
     proprietarioAvatarUrl: 'https://i.pravatar.cc/40?u=micheal.owen@example.com',
     email: 'michael.owen@gmail.com',
     descricao: 'Sensor Principal',
-    localizacao: 'Rua 6',
+    localizacao: 'Avenida das Flores, Bairro Vila Nova, Joinville',
+    cidade: 'Joinville',
+    bairro: 'Vila Nova',
+    rua: 'Avenida das Flores',
+    numero: '988',
+    complemento: '',
     localizacaoIcon: 'map',
   },
   {
@@ -53,7 +73,12 @@ const ELEMENT_DATA: PluviometroElement[] = [
     proprietarioAvatarUrl: 'https://i.pravatar.cc/40?u=mary.jane@example.com',
     email: 'mary.jane@gmail.com',
     descricao: 'Estação Meteorológica Caseira',
-    localizacao: 'Rua 8',
+    localizacao: 'Rua das Acácias, Bairro Garcia, Blumenau',
+    cidade: 'Blumenau',
+    bairro: 'Garcia',
+    rua: 'Rua das Acácias',
+    numero: '231',
+    complemento: 'Fundos',
     localizacaoIcon: 'map',
   },
   {
@@ -62,10 +87,16 @@ const ELEMENT_DATA: PluviometroElement[] = [
     proprietarioAvatarUrl: 'https://i.pravatar.cc/40?u=peter.doodle@example.com',
     email: 'peter.doodle@gmail.com',
     descricao: 'Ponto de Coleta Alpha',
-    localizacao: 'Rua 89',
+    localizacao: 'Rua 89, Bairro Victor Konder, Blumenau',
+    cidade: 'Blumenau',
+    bairro: 'Victor Konder',
+    rua: 'Rua 89',
+    numero: '450',
+    complemento: 'Sala 5',
     localizacaoIcon: 'map',
   },
 ];
+
 
 @Component({
   selector: 'app-owner', // Changed from app-pluviometro-list
