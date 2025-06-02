@@ -1,14 +1,131 @@
-@import '../styles/variables.scss';
+// In your global styles.scss or angular.json, ensure Angular Material theme is imported.
+// e.g., @import "@angular/material/prebuilt-themes/indigo-pink.css";
+// And if you have custom variables:
+// @import './styles/variables.scss'; // Ensure this path is correct relative to styles.scss
 
-.toolbar {
-    background-color: $primary-color;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    width: 100%;
+// app.component.scss
+
+// Variables for the app shell (can also come from your _variables.scss)
+$sidebar-width: 240px;
+$content-top-toolbar-height: 64px; // Height of the "Max Augusto" bar
+$sidebar-background: #ffffff;
+$sidebar-border-color: #e0e0e0;
+$content-area-background: #f4f6f8; // Light gray for the main content background
+$content-toolbar-background: #ffffff;
+$active-link-background: rgba(63, 81, 181, 0.1); // Example using Material Blue
+$active-link-color: #3f51b5; // Example using Material Blue
+
+.app-container {
+  height: 100vh;
+  display: flex; // Ensures proper flex behavior for sidenav
 }
 
-body {
-    margin-top: 64px; /* Ajusta o conteúdo da página para não ficar escondido sob a navbar */
+.app-sidenav {
+  width: $sidebar-width;
+  background-color: $sidebar-background;
+  border-right: 1px solid $sidebar-border-color;
+
+  .sidenav-header {
+    img.logo{
+      width: 70px;
+      height: 100px;
+    }
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    height: $content-top-toolbar-height; // Match content toolbar height for alignment
+    box-sizing: border-box;
+
+    .logo {
+      height: 30px; // Adjust
+      margin-right: 10px;
+    }
+    span {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: $active-link-color; // Use a theme color
+    }
   }
+
+  .mat-nav-list .mat-list-item {
+    color: #555;
+    height: 48px;
+
+    .mat-icon {
+      margin-right: 16px;
+      color: #777;
+    }
+  }
+
+  .mat-nav-list .active-link {
+    background-color: $active-link-background;
+    color: $active-link-color;
+    font-weight: 500;
+
+    .mat-icon {
+      color: $active-link-color;
+    }
+  }
+}
+
+.app-sidenav-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%; // Takes full height of its container
+  width: calc(100% - #{$sidebar-width}); // Takes remaining width
+  background-color: $content-area-background;
+}
+
+.content-toolbar {
+  background-color: $content-toolbar-background;
+  color: #333;
+  border-bottom: 1px solid $sidebar-border-color; // Consistent border color
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  height: $content-top-toolbar-height;
+  min-height: $content-top-toolbar-height; // Ensure mat-toolbar respects height
+  padding: 0 16px; // Standard padding for toolbars
+  display: flex; // Ensure items inside align correctly
+  align-items: center; // Vertically center items in toolbar
+
+  // position: sticky; // Uncomment if you want this bar to stick when scrolling page content
+  // top: 0;
+  // z-index: 100;
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  .user-menu-button {
+    display: flex;
+    align-items: center;
+    .user-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin-right: 8px;
+      object-fit: cover;
+    }
+    span {
+      margin-right: 4px;
+    }
+  }
+}
+
+.page-content-wrapper {
+  flex-grow: 1; // Takes remaining vertical space after the content-toolbar
+  overflow-y: auto; // Allows content within pages to scroll
+  // The padding for the individual page content (e.g., OwnerComponent's .pluviometro-container)
+  // should be defined within that component's SCSS.
+  // For example, in owner.component.scss:
+  // .pluviometro-container { padding: 24px; }
+}
+
+// If you have a variables.scss like:
+// styles/_variables.scss
+// $primary-color: #3f51b5;
+// $accent-color: #ff4081;
+// ... then you would import it at the top of app.component.scss or, ideally, in your global styles.scss
+// if these variables are used across multiple components.
+// If variables.scss is in src/styles/_variables.scss and app.component.scss is in src/app/app.component.scss,
+// the import in app.component.scss would be:
+// @import '../../styles/variables'; // No .scss needed for partials

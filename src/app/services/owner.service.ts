@@ -22,8 +22,22 @@ url : string = "http://localhost:8080/owner"
     )
   }
 
+  updateOwner(owner: Owner): Observable<Owner> { // <--- THIS METHOD MUST EXIST
+    if (owner.id === null || owner.id === undefined) {
+      console.error('Owner ID is required for update operation in service.');
+      throw new Error('Owner ID is required for update.');
+    }
+    return this.http.put<Owner>(`${this.url}/${owner.id}`, owner);
+  }
+
+  deleteOwner(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.url}/${id}`);
+  }
+
   private handleError(error: any): Observable<never> {
     console.error('Erro no serviço:', error);
     return throwError(() => new Error('Ocorreu um erro. Tente novamente mais tarde.'));
   }
+
+  
 }

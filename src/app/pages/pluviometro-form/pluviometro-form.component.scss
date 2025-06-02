@@ -1,0 +1,9 @@
+.pluviometro-form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; // Adds space between form fields
+  }
+  
+  mat-form-field {
+    width: 100%;
+  }

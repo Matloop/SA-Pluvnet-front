@@ -1,73 +1,94 @@
-<!-- Section to Display the List of Owners -->
-<div>
-    <h2>Lista de Proprietários</h2>
-    <ul *ngIf="owners && owners.length > 0">
-      <!-- Loop through each owner in the 'owners' array -->
-      <li *ngFor="let owner of owners">
-        <strong>ID:</strong> {{ owner.id }} <br>
-        <strong>Nome:</strong> {{ owner.nome }} <br>
-        <strong>Email:</strong> {{ owner.email }} <br>
-        <strong>Telefone:</strong> {{ owner.telefone }} <br>
-      </li>
-    </ul>
-    <!-- Message shown if the 'owners' array is empty or null -->
-    <p *ngIf="!owners || owners.length === 0">
-      Nenhum proprietário encontrado.
-    </p>
+<div class="pluviometro-container">
+  <header class="page-header">
+    <div class="title-section">
+      <h1>Pluviômetros</h1>
+      <p>Aqui está uma lista com todos os Pluviômetros</p>
+    </div>
+    <div class="actions-section">
+      <button mat-raised-button color="primary" (click)="adicionarPluviometro()">
+        <mat-icon>add</mat-icon> Adicionar pluviômetro
+      </button>
+      <button mat-raised-button color="accent" (click)="fazerMedicao()">
+        <mat-icon>timeline</mat-icon> Fazer medição
+      </button>
+    </div>
+  </header>
+
+  <div class="table-container mat-elevation-z8">
+    <table mat-table [dataSource]="dataSource" class="pluviometro-table">
+
+      <!-- Checkbox Column -->
+      <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef>
+          <mat-checkbox (change)="$event ? masterToggle() : null"
+                        [checked]="selection.hasValue() && isAllSelected()"
+                        [indeterminate]="selection.hasValue() && !isAllSelected()"
+                        [aria-label]="checkboxLabel()">
+          </mat-checkbox>
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <mat-checkbox (click)="$event.stopPropagation()"
+                        (change)="$event ? selection.toggle(row) : null"
+                        [checked]="selection.isSelected(row)"
+                        [aria-label]="checkboxLabel(row)">
+          </mat-checkbox>
+        </td>
+      </ng-container>
+
+      <!-- Proprietário Column -->
+      <ng-container matColumnDef="proprietario">
+        <th mat-header-cell *matHeaderCellDef> Proprietário </th>
+        <td mat-cell *matCellDef="let element">
+          <div class="proprietario-cell">
+            <img *ngIf="element.proprietarioAvatarUrl" [src]="element.proprietarioAvatarUrl" alt="Avatar" class="avatar">
+            <div *ngIf="!element.proprietarioAvatarUrl" class="avatar-placeholder">
+              {{ element.proprietarioNome.charAt(0) }}
+            </div>
+            <span>{{element.proprietarioNome}}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Endereço de Email Column -->
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef> Endereço de email </th>
+        <td mat-cell *matCellDef="let element"> {{element.email}} </td>
+      </ng-container>
+
+      <!-- Descrição Column -->
+      <ng-container matColumnDef="descricao">
+        <th mat-header-cell *matHeaderCellDef> Descrição </th>
+        <td mat-cell *matCellDef="let element"> {{element.descricao}} </td>
+      </ng-container>
+
+      <!-- Localização Column -->
+      <ng-container matColumnDef="localizacao">
+        <th mat-header-cell *matHeaderCellDef> Localização </th>
+        <td mat-cell *matCellDef="let element">
+          <div class="localizacao-cell">
+            <span>{{element.localizacao}}</span>
+            <button mat-icon-button (click)="verLocalizacao(element)" matTooltip="Ver no mapa">
+              <mat-icon>{{element.localizacaoIcon}}</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Ações Column -->
+      <ng-container matColumnDef="acoes">
+        <th mat-header-cell *matHeaderCellDef> Ações </th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-icon-button color="primary" (click)="editarItem(element)" matTooltip="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="excluirItem(element)" matTooltip="Excluir">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selection.toggle(row)"></tr>
+    </table>
   </div>
-  
-  <!-- Section for the Add/Edit Owner Form -->
-  <!-- This div is shown only when 'showOwnerForm' is true -->
-  <div *ngIf="showOwnerForm">
-    <!-- Dynamically set the title based on whether an ID exists (editing vs. adding) -->
-    <h2>{{ ownerForm.get('id')?.value ? 'Editar' : 'Adicionar' }} Proprietário</h2>
-  
-    <!-- The form uses Angular's Reactive Forms -->
-    <form [formGroup]="ownerForm" (ngSubmit)="saveOwner()">
-  
-      <!-- ID Field (usually hidden or read-only) -->
-      <!-- Hidden for adding new owners. Could be displayed as read-only when editing. -->
-      <input formControlName="id" type="hidden" />
-  
-      <!-- Nome Field -->
-      <div>
-        <label for="owner-nome">Nome:</label>
-        <input id="owner-nome" formControlName="nome" type="text" placeholder="Nome completo" required />
-        <!-- Basic validation message example -->
-        <div *ngIf="ownerForm.get('nome')?.invalid && (ownerForm.get('nome')?.dirty || ownerForm.get('nome')?.touched)" style="color: red;">
-          Nome é obrigatório.
-        </div>
-      </div>
-  
-      <!-- Email Field -->
-      <div>
-        <label for="owner-email">Email:</label>
-        <input id="owner-email" formControlName="email" type="email" placeholder="email@exemplo.com" required />
-         <!-- Basic validation message example -->
-         <div *ngIf="ownerForm.get('email')?.invalid && (ownerForm.get('email')?.dirty || ownerForm.get('email')?.touched)" style="color: red;">
-           <span *ngIf="ownerForm.get('email')?.errors?.['required']">Email é obrigatório.</span>
-           <span *ngIf="ownerForm.get('email')?.errors?.['email']">Formato de email inválido.</span>
-        </div>
-      </div>
-  
-      <!-- Telefone Field -->
-      <div>
-        <label for="owner-telefone">Telefone:</label>
-        <input id="owner-telefone" formControlName="telefone" type="tel" placeholder="(XX) XXXXX-XXXX" required />
-         <!-- Basic validation message example -->
-         <div *ngIf="ownerForm.get('telefone')?.invalid && (ownerForm.get('telefone')?.dirty || ownerForm.get('telefone')?.touched)" style="color: red;">
-          Telefone é obrigatório.
-        </div>
-      </div>
-  
-      <!-- Submit Button -->
-      <!-- Disabled if the form is invalid -->
-      <button type="submit" [disabled]="ownerForm.invalid">Salvar Proprietário</button>
-      
-  
-    </form>
-  </div>
-  
-  <!-- Button to trigger showing the form -->
-  <!-- This button is shown only when the form is hidden -->
-  <button *ngIf="!showOwnerForm" (click)="displayOwnerForm()">Adicionar Proprietário</button>
+</div>
