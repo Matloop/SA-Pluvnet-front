@@ -200,12 +200,22 @@ export class SignUpComponent implements OnInit, AfterViewInit {
           if (err.error && typeof err.error === 'string') {
               errorMessage = err.error;
           } else if (err.status === 409) {
-            errorMessage = "Este email já está cadastrado.";
-            const emailControl = this.signupForm.get('email');
-            if (emailControl) {
-                emailControl.setErrors({ ...emailControl.errors, 'alreadyExists': true });
-                emailControl.markAsTouched();
+            errorMessage = err.error.message;
+            if(err.error.message.includes('email')) {
+              const emailControl = this.signupForm.get('email');
+              if (emailControl) {
+                  emailControl.setErrors({ ...emailControl.errors, 'alreadyExists': true });
+                  emailControl.markAsTouched();
+              }
             }
+            if(err.error.message.includes('cpf')) {
+              const cpfControl = this.signupForm.get('cpf');
+              if (cpfControl) {
+                  cpfControl.setErrors({ ...cpfControl.errors, 'alreadyExists': true });
+                  cpfControl.markAsTouched();
+              }
+            }
+            
           } else if (err.status === 400) {
             errorMessage = "Dados inválidos. Verifique os campos preenchidos.";
           }

@@ -73,6 +73,7 @@
     <div class="form-error" *ngIf="signupForm.get('cpf')?.invalid && signupForm.get('cpf')?.touched">
       <div *ngIf="signupForm.get('cpf')?.hasError('required')">O CPF é obrigatório.</div>
       <div *ngIf="signupForm.get('cpf')?.hasError('cpfBasicFormat')">CPF deve ter 11 dígitos numéricos.</div>
+      <div *ngIf="signupForm.get('cpf')?.hasError('alreadyExists')">Este CPF já está cadastrado.</div>
       <!-- CORRIGIDO: Acessar a mensagem do erro específico. -->
       <div *ngIf="signupForm.get('cpf')?.hasError('cpfApiInvalid')">{{ signupForm.get('cpf')?.errors?.['cpfApiInvalid'] }}</div>
       <div *ngIf="signupForm.get('cpf')?.hasError('cpfApiSystemError')">{{ signupForm.get('cpf')?.errors?.['cpfApiSystemError'] }}</div>
