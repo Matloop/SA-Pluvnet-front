@@ -1,0 +1,16 @@
+// src/app/pages/medicao-form/medicao-form.component.scss
+.medicao-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; // Espaço entre os campos do formulário
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+// Opcional: para garantir que o input de data não permita digitação manual
+// e force o uso do datepicker, embora o 'readonly' no input já ajude.
+// mat-form-field input[matInput][readonly] {
+//   cursor: pointer;
+// }

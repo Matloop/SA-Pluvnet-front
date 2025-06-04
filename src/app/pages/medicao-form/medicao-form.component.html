@@ -1,0 +1,46 @@
+<h2 mat-dialog-title>{{ dialogTitle }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="medicaoForm" class="medicao-form-fields">
+
+    <mat-form-field appearance="outline">
+      <mat-label>Valor da Medição (mm)</mat-label>
+      <input matInput type="number" formControlName="valorMedicao" placeholder="Ex: 10.5" required>
+      <mat-error *ngIf="valorMedicao?.hasError('required')">
+        Valor é obrigatório.
+      </mat-error>
+      <mat-error *ngIf="valorMedicao?.hasError('min')">
+        Valor deve ser positivo.
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Data da Medição</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="dataMedicao" required readonly> <!-- readonly para forçar uso do picker -->
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-error *ngIf="dataMedicao?.hasError('required')">
+        Data é obrigatória.
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Hora da Medição</mat-label>
+      <input matInput type="time" formControlName="horaMedicao" placeholder="HH:mm" required>
+      <mat-hint>Formato HH:mm (ex: 14:30)</mat-hint>
+      <mat-error *ngIf="horaMedicao?.hasError('required')">
+        Hora é obrigatória.
+      </mat-error>
+      <mat-error *ngIf="horaMedicao?.hasError('pattern')">
+        Formato de hora inválido (HH:mm).
+      </mat-error>
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="medicaoForm.invalid">
+    {{ isEditMode ? 'Salvar Alterações' : 'Adicionar' }}
+  </button>
+</mat-dialog-actions>

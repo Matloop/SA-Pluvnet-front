@@ -5,7 +5,11 @@
       <p>Aqui está uma lista com todos os Pluviômetros</p>
     </div>
     <div class="actions-section">
-      <button mat-raised-button color="primary" (click)="adicionarPluviometro()">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="adicionarPluviometro()"
+      >
         <mat-icon>add</mat-icon> Adicionar pluviômetro
       </button>
       <button mat-raised-button color="accent" (click)="fazerMedicao()">
@@ -16,59 +20,84 @@
 
   <div class="table-container mat-elevation-z8">
     <table mat-table [dataSource]="dataSource" class="pluviometro-table">
-
       <!-- Checkbox Column -->
       <ng-container matColumnDef="select">
         <th mat-header-cell *matHeaderCellDef>
-          <mat-checkbox (change)="$event ? masterToggle() : null"
-                        [checked]="selection.hasValue() && isAllSelected()"
-                        [indeterminate]="selection.hasValue() && !isAllSelected()"
-                        [aria-label]="checkboxLabel()">
+          <mat-checkbox
+            (change)="$event ? masterToggle() : null"
+            [checked]="selection.hasValue() && isAllSelected()"
+            [indeterminate]="selection.hasValue() && !isAllSelected()"
+            [aria-label]="checkboxLabel()"
+          >
           </mat-checkbox>
         </th>
         <td mat-cell *matCellDef="let row">
-          <mat-checkbox (click)="$event.stopPropagation()"
-                        (change)="$event ? selection.toggle(row) : null"
-                        [checked]="selection.isSelected(row)"
-                        [aria-label]="checkboxLabel(row)">
+          <mat-checkbox
+            (click)="$event.stopPropagation()"
+            (change)="$event ? selection.toggle(row) : null"
+            [checked]="selection.isSelected(row)"
+            [aria-label]="checkboxLabel(row)"
+          >
           </mat-checkbox>
         </td>
       </ng-container>
 
       <!-- Proprietário Column -->
       <ng-container matColumnDef="proprietario">
-        <th mat-header-cell *matHeaderCellDef> Proprietário </th>
+        <th mat-header-cell *matHeaderCellDef>Proprietário</th>
         <td mat-cell *matCellDef="let element">
           <div class="proprietario-cell">
-            <img *ngIf="element.proprietarioAvatarUrl" [src]="element.proprietarioAvatarUrl" alt="Avatar" class="avatar">
-            <div *ngIf="!element.proprietarioAvatarUrl" class="avatar-placeholder">
+            <img
+              *ngIf="element.proprietarioAvatarUrl"
+              [src]="element.proprietarioAvatarUrl"
+              alt="Avatar"
+              class="avatar"
+            />
+            <div
+              *ngIf="!element.proprietarioAvatarUrl"
+              class="avatar-placeholder"
+            >
               {{ element.proprietarioNome.charAt(0) }}
             </div>
-            <span>{{element.proprietarioNome}}</span>
+            <span>{{ element.proprietarioNome }}</span>
           </div>
         </td>
       </ng-container>
 
       <!-- Endereço de Email Column -->
       <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef> Endereço de email </th>
-        <td mat-cell *matCellDef="let element"> {{element.email}} </td>
+        <th mat-header-cell *matHeaderCellDef>Endereço de email</th>
+        <td mat-cell *matCellDef="let element">{{ element.email }}</td>
       </ng-container>
 
       <!-- Descrição Column -->
       <ng-container matColumnDef="descricao">
-        <th mat-header-cell *matHeaderCellDef> Descrição </th>
-        <td mat-cell *matCellDef="let element"> {{element.descricao}} </td>
+        <th mat-header-cell *matHeaderCellDef>Descrição</th>
+        <td mat-cell *matCellDef="let element">{{ element.descricao }}</td>
       </ng-container>
 
       <!-- Localização Column -->
       <ng-container matColumnDef="localizacao">
-        <th mat-header-cell *matHeaderCellDef> Localização </th>
+        <th mat-header-cell *matHeaderCellDef>Localização</th>
         <td mat-cell *matCellDef="let element">
           <div class="localizacao-cell">
-            <span>{{element.localizacao}}</span>
-            <button mat-icon-button (click)="verLocalizacao(element)" matTooltip="Ver no mapa">
-              <mat-icon>{{element.localizacaoIcon}}</mat-icon>
+            <div class="endereco-info">
+              <!-- Novo div para agrupar as informações de endereço -->
+              <span>R. {{ element.rua }}, {{ element.numero }} - {{ element.bairro }}</span>
+              <!-- Você também pode adicionar a cidade se quiser: -->
+              <!-- <span>{{element.cidade}}</span> -->
+              <!-- Se ainda quiser mostrar a string 'localizacao' (lat,lng) original, pode adicionar aqui: -->
+              <!-- <span class="coordenadas">{{element.localizacao}}</span> -->
+            </div>
+            <button
+              mat-icon-button
+              (click)="verLocalizacao(element)"
+              matTooltip="Ver no mapa"
+            >
+              <mat-icon>{{
+                element.localizacaoIcon || "location_on"
+              }}</mat-icon>
+              <!-- Adicionado um ícone padrão -->
             </button>
           </div>
         </td>
@@ -76,19 +105,33 @@
 
       <!-- Ações Column -->
       <ng-container matColumnDef="acoes">
-        <th mat-header-cell *matHeaderCellDef> Ações </th>
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
         <td mat-cell *matCellDef="let element">
-          <button mat-icon-button color="primary" (click)="editarItem(element)" matTooltip="Editar">
+          <button
+            mat-icon-button
+            color="primary"
+            (click)="editarItem(element)"
+            matTooltip="Editar"
+          >
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button color="warn" (click)="excluirItem(element)" matTooltip="Excluir">
+          <button
+            mat-icon-button
+            color="warn"
+            (click)="excluirItem(element)"
+            matTooltip="Excluir"
+          >
             <mat-icon>delete</mat-icon>
           </button>
         </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selection.toggle(row)"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        (click)="selection.toggle(row)"
+      ></tr>
     </table>
   </div>
 </div>

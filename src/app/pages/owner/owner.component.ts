@@ -8,6 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // Import MatDialog
 import { PluviometroFormComponent, PluviometroFormData } from '../pluviometro-form/pluviometro-form.component'; // Adjust path
+import { MedicaoFormComponent, MedicaoFormData, MedicaoFormResult } from '../medicao-form/medicao-form.component';
 
 // This interface might be better defined in a shared models file
 export interface PluviometroElement {
@@ -16,7 +17,7 @@ export interface PluviometroElement {
   proprietarioAvatarUrl?: string;
   email: string;
   descricao: string;
-  localizacao: string;
+  cep: string;
   cidade: string;
   bairro: string;
   rua: string;
@@ -31,7 +32,7 @@ const ELEMENT_DATA: PluviometroElement[] = [
     proprietarioNome: 'Max Augusto',
     email: 'max.augusto@gmail.com',
     descricao: 'Descrição Padrão 1',
-    localizacao: 'Rua 3, Bairro Central, Blumenau',
+    cep: 'Rua 3, Bairro Central, Blumenau',
     cidade: 'Blumenau',
     bairro: 'Centro',
     rua: 'Rua 3',
@@ -45,7 +46,7 @@ const ELEMENT_DATA: PluviometroElement[] = [
     proprietarioAvatarUrl: 'https://i.pravatar.cc/40?u=sarah.brown@example.com',
     email: 'sarah.brown@gmail.com',
     descricao: 'Pluviômetro do Jardim',
-    localizacao: 'Rua 5, Bairro Itoupava, Blumenau',
+    cep: 'Rua 5, Bairro Itoupava, Blumenau',
     cidade: 'Blumenau',
     bairro: 'Itoupava',
     rua: 'Rua 5',
@@ -59,7 +60,7 @@ const ELEMENT_DATA: PluviometroElement[] = [
     proprietarioAvatarUrl: 'https://i.pravatar.cc/40?u=micheal.owen@example.com',
     email: 'michael.owen@gmail.com',
     descricao: 'Sensor Principal',
-    localizacao: 'Avenida das Flores, Bairro Vila Nova, Joinville',
+    cep: 'Avenida das Flores, Bairro Vila Nova, Joinville',
     cidade: 'Joinville',
     bairro: 'Vila Nova',
     rua: 'Avenida das Flores',
@@ -73,7 +74,7 @@ const ELEMENT_DATA: PluviometroElement[] = [
     proprietarioAvatarUrl: 'https://i.pravatar.cc/40?u=mary.jane@example.com',
     email: 'mary.jane@gmail.com',
     descricao: 'Estação Meteorológica Caseira',
-    localizacao: 'Rua das Acácias, Bairro Garcia, Blumenau',
+    cep: 'Rua das Acácias, Bairro Garcia, Blumenau',
     cidade: 'Blumenau',
     bairro: 'Garcia',
     rua: 'Rua das Acácias',
@@ -87,7 +88,7 @@ const ELEMENT_DATA: PluviometroElement[] = [
     proprietarioAvatarUrl: 'https://i.pravatar.cc/40?u=peter.doodle@example.com',
     email: 'peter.doodle@gmail.com',
     descricao: 'Ponto de Coleta Alpha',
-    localizacao: 'Rua 89, Bairro Victor Konder, Blumenau',
+    cep: 'Rua 89, Bairro Victor Konder, Blumenau',
     cidade: 'Blumenau',
     bairro: 'Victor Konder',
     rua: 'Rua 89',
@@ -187,13 +188,55 @@ export class OwnerComponent implements OnInit {
   }
 
   fazerMedicao(): void {
-    console.log('Fazer Medição clicado');
-    // This would likely open another dialog or navigate to a new component/view
-    // e.g., const dialogRef = this.dialog.open(FazerMedicaoFormComponent, {...});
+    if (this.selection.selected.length !== 1) {
+      // Idealmente, usar MatSnackBar para feedback ao usuário
+      const message = this.selection.selected.length === 0
+        ? 'Por favor, selecione um pluviômetro para registrar uma medição.'
+        : 'Por favor, selecione apenas um pluviômetro por vez para registrar uma medição.';
+      alert(message); // Substitua por MatSnackBar para melhor UX
+      console.warn(message);
+      return;
+    }
+
+    const pluviometroSelecionado = this.selection.selected[0];
+    const pluviometroId = pluviometroSelecionado.id;
+
+    const dialogData: MedicaoFormData = {
+      pluviometroId: pluviometroId,
+      isEditMode: false, // Sempre adicionando uma nova medição através deste fluxo
+      // medicao: undefined // Não estamos editando uma medição existente aqui
+    };
+
+    const dialogRef = this.dialog.open<MedicaoFormComponent, MedicaoFormData, MedicaoFormResult>(
+      MedicaoFormComponent,
+      {
+        width: '450px', // Largura do MedicaoFormComponent
+        data: dialogData,
+        disableClose: true // Opcional: impede fechar clicando fora ou com ESC
+      }
+    );
+
+    dialogRef.afterClosed().subscribe((result: MedicaoFormResult | undefined) => {
+      if (result) {
+        console.log(`Nova medição registrada para Pluviômetro ID ${result.pluviometroId}:`, result);
+        // Aqui você normalmente chamaria um serviço para persistir a medição.
+        // Ex: this.medicaoService.salvarMedicao(result).subscribe(
+        //   response => {
+        //     console.log('Medição salva com sucesso!', response);
+        //     // this.snackBar.open('Medição salva com sucesso!', 'Fechar', { duration: 3000 });
+        //   },
+        //   error => {
+        //     console.error('Erro ao salvar medição', error);
+        //     // this.snackBar.open('Erro ao salvar medição.', 'Fechar', { duration: 3000 });
+        //   }
+        // );
+      }
+    });
   }
 
   verLocalizacao(element: PluviometroElement): void {
-    console.log('Ver localização:', element.localizacao);
-    // Implement map view logic, perhaps open a map in a dialog or navigate
+    const enderecoCompleto = `${element.rua}, ${element.numero}, ${element.bairro}, ${element.cidade}`;
+    const url = `https://www.google.com/maps?q=${encodeURIComponent(enderecoCompleto)}`;
+    window.open(url, '_blank');
   }
 }

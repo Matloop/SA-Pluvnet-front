@@ -49,7 +49,7 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
       proprietarioNome: [data.pluviometro?.proprietarioNome || '', Validators.required],
       email: [data.pluviometro?.email || '', [Validators.required, Validators.email]],
       descricao: [data.pluviometro?.descricao || '', Validators.required],
-      localizacao: [data.pluviometro?.localizacao || '', [Validators.required, Validators.pattern(/^\d{5}-?\d{3}$/)]],
+      localizacao: [data.pluviometro?.cep || '', [Validators.required, Validators.pattern(/^\d{5}-?\d{3}$/)]],
       cidade: [{ value: data.pluviometro?.cidade || '', disabled: true }, Validators.required],
       bairro: [{ value: data.pluviometro?.bairro || '', disabled: true }, Validators.required],
       rua: [{ value: data.pluviometro?.rua || '', disabled: true }, Validators.required],
@@ -62,8 +62,8 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
     this.setupCepLookup();
 
     if (this.isEditMode && this.data.pluviometro) {
-      if (this.data.pluviometro.localizacao && this.pluviometroForm.get('localizacao')) {
-         const cepValue = this.data.pluviometro.localizacao;
+      if (this.data.pluviometro.cep && this.pluviometroForm.get('localizacao')) {
+         const cepValue = this.data.pluviometro.cep;
          if (/^\d{8}$/.test(cepValue)) {
             this.pluviometroForm.get('localizacao')?.setValue(`${cepValue.substring(0,5)}-${cepValue.substring(5)}`);
          } else {
