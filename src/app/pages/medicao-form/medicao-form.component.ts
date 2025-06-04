@@ -6,29 +6,30 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core'; // MAT_DATE_LOCALE para pt-BR
-import { MatIconModule } from '@angular/material/icon'; // Para o ícone do datepicker
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatIconModule } from '@angular/material/icon';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { PluviometroElement } from '../owner/owner.component';
+import { PluviometroElement } from '../owner/owner.component'; // Assuming PluviometroElement has an 'id' property
 
-// Interfaces (podem estar em outro arquivo)
+// Interfaces
 export interface MedicaoFormData {
   medicao?: {
     id?: number;
     valor: number;
     dataHora: Date | string;
   };
-  pluviometroId: number;
+  // pluviometroId: number; // OLD: We'll pass the full object instead
+  pluviometro: PluviometroElement; // NEW: Expect the full PluviometroElement object
   isEditMode: boolean;
 }
 
 export interface MedicaoFormResult {
   id?: number;
-  pluviometroId: number;
+  pluviometroId: number; // The ID of the pluviometer
   valor: number;
-  dataHora: Date
-  EquipmentId: PluviometroElement
+  dataHora: Date;
+  EquipmentId: PluviometroElement; // The Pluviometer object itself
 }
 
 
@@ -43,37 +44,34 @@ export interface MedicaoFormResult {
     MatInputModule,
     MatButtonModule,
     MatDatepickerModule,
-    MatNativeDateModule, // Essencial para o MatDatepicker funcionar com objetos Date nativos
+    MatNativeDateModule,
     MatIconModule
   ],
   templateUrl: './medicao-form.component.html',
   styleUrls: ['./medicao-form.component.scss'],
-  providers: [
-    // Opcional: se quiser forçar o locale do datepicker para pt-BR
-    // { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
-  ]
+  providers: []
 })
 export class MedicaoFormComponent implements OnInit, OnDestroy {
   medicaoForm: FormGroup;
   isEditMode: boolean;
   dialogTitle: string;
-  pluviometroId: number;
+  // pluviometroId: number; // OLD
+  pluviometro: PluviometroElement; // NEW: Store the passed PluviometroElement object
   private destroy$ = new Subject<void>();
 
-  // Para facilitar o acesso aos controles no template
   get valorMedicao() { return this.medicaoForm.get('valorMedicao'); }
   get dataMedicao() { return this.medicaoForm.get('dataMedicao'); }
   get horaMedicao() { return this.medicaoForm.get('horaMedicao'); }
 
-
   constructor(
     private fb: FormBuilder,
-    public dialogRef: MatDialogRef<MedicaoFormComponent, MedicaoFormResult>, // Especifica o tipo de resultado
-    @Inject(MAT_DIALOG_DATA) public data: MedicaoFormData
+    public dialogRef: MatDialogRef<MedicaoFormComponent, MedicaoFormResult>,
+    @Inject(MAT_DIALOG_DATA) public data: MedicaoFormData // data now contains 'pluviometro' object
   ) {
     this.isEditMode = data.isEditMode;
     this.dialogTitle = this.isEditMode ? 'Editar Medição' : 'Adicionar Nova Medição';
-    this.pluviometroId = data.pluviometroId;
+    // this.pluviometroId = data.pluviometroId; // OLD
+    this.pluviometro = data.pluviometro; // NEW: Store the PluviometroElement
 
     let initialDate = new Date();
     let initialTime = `${String(initialDate.getHours()).padStart(2, '0')}:${String(initialDate.getMinutes()).padStart(2, '0')}`;
@@ -91,14 +89,12 @@ export class MedicaoFormComponent implements OnInit, OnDestroy {
 
     this.medicaoForm = this.fb.group({
       valorMedicao: [initialValor, [Validators.required, Validators.min(0)]],
-      dataMedicao: [initialDate, Validators.required], // Campo para a data
-      horaMedicao: [initialTime, [Validators.required, Validators.pattern(/^([01]\d|2[0-3]):([0-5]\d)$/)]] // Campo para a hora "HH:mm"
+      dataMedicao: [initialDate, Validators.required],
+      horaMedicao: [initialTime, [Validators.required, Validators.pattern(/^([01]\d|2[0-3]):([0-5]\d)$/)]]
     });
   }
 
-  ngOnInit(): void {
-    // Lógica de inicialização se necessário
-  }
+  ngOnInit(): void {}
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -113,10 +109,8 @@ export class MedicaoFormComponent implements OnInit, OnDestroy {
     if (this.medicaoForm.valid) {
       const formValue = this.medicaoForm.getRawValue();
 
-      // Combinar data e hora em um único objeto Date
       const datePart: Date = formValue.dataMedicao;
-      const timePart: string = formValue.horaMedicao; // Formato "HH:mm"
-
+      const timePart: string = formValue.horaMedicao;
       const [hours, minutes] = timePart.split(':').map(Number);
 
       const combinedDateTime = new Date(
@@ -127,18 +121,34 @@ export class MedicaoFormComponent implements OnInit, OnDestroy {
         minutes
       );
 
+      // Ensure PluviometroElement has an 'id' property and it's a number, or can be parsed to one.
+      let pId: number;
+      if (typeof this.pluviometro.id === 'number') {
+        pId = this.pluviometro.id;
+      } else if (typeof this.pluviometro.id === 'string') {
+        pId = parseInt(this.pluviometro.id, 10);
+        if (isNaN(pId)) {
+          console.error("Error: Pluviometro ID from PluviometroElement is a string and could not be parsed to a number:", this.pluviometro.id);
+          // Optionally, handle this error more gracefully (e.g., show a message to the user)
+          this.medicaoForm.setErrors({ invalidPluviometroId: true }); // Example of setting form error
+          return; // Prevent closing dialog with invalid data
+        }
+      } else {
+        console.error("Error: Pluviometro ID from PluviometroElement is of an unexpected type:", this.pluviometro.id);
+        this.medicaoForm.setErrors({ invalidPluviometroId: true });
+        return;
+      }
+
       const result: MedicaoFormResult = {
-        pluviometroId: this.pluviometroId,
+        // pluviometroId: this.pluviometroId, // OLD
+        pluviometroId: pId, // NEW: Use the ID from the PluviometroElement object
         valor: parseFloat(formValue.valorMedicao),
         dataHora: combinedDateTime,
-        EquipmentId: undefined
+        EquipmentId: this.pluviometro // NEW: Assign the actual PluviometroElement object
       };
 
       if (this.isEditMode && this.data.medicao?.id) {
         result.id = this.data.medicao.id;
-      } else if (!this.isEditMode) {
-        // Poderia gerar um ID temporário ou deixar para o backend
-        // result.id = Date.now(); // Exemplo de ID temporário client-side
       }
 
       this.dialogRef.close(result);

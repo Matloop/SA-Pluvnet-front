@@ -1,99 +1,161 @@
+// src/app/pages/owner/owner.component.scss
+
 .pluviometro-container {
-    padding: 24px;
-    background-color: #f5f5f5;
-    min-height: calc(100vh - 64px);
+  padding: 24px;
+  background-color: #f5f5f5;
+  min-height: calc(100vh - 64px); // Assuming 64px is your toolbar/header height
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .title-section {
+    h1 {
+      font-size: 24px;
+      margin: 0 0 4px 0;
+      color: #333;
+      font-weight: 500; // Added for better heading emphasis
+    }
+    p {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
   }
-  
-  .page-header {
+
+  .actions-section {
+    display: flex; // Ensures buttons are in a row
+    gap: 12px; // Replaces margin-left on individual buttons for better spacing
+
+    button {
+      // margin-left: 12px; // Replaced by gap on parent
+      mat-icon {
+        margin-right: 6px; // Slightly more space for icon in button
+      }
+    }
+  }
+}
+
+.table-container {
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden; // Important for border-radius on table
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.05); // Softer shadow
+}
+
+.pluviometro-table {
+  width: 100%;
+
+  th.mat-mdc-header-cell { // Updated for Angular Material v15+
+    background-color: #fafafa;
+    color: #424242; // Darker gray for better contrast
+    font-weight: 500;
+    font-size: 13px; // Slightly smaller header font
+    letter-spacing: 0.5px;
+  }
+
+  td.mat-mdc-cell, th.mat-mdc-header-cell { // Updated for Angular Material v15+
+    padding: 12px 16px;
+    border-bottom-width: 1px; // Ensure bottom border is consistent
+    border-bottom-style: solid;
+    border-bottom-color: #e0e0e0; // Standard Material divider color
+  }
+
+  tr.mat-mdc-row:last-child td.mat-mdc-cell,
+  tr.mat-mdc-footer-row:last-child td.mat-mdc-cell { // Updated for Angular Material v15+
+    border-bottom-width: 0; // No border for the last row
+  }
+
+  // Style for the selected row
+  .mat-mdc-row.selected-row { // Updated for Angular Material v15+
+    background-color: #e8f0fe; // Light blue for selection
+  }
+
+  .proprietario-cell {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-  
-    .title-section {
-      h1 {
-        font-size: 24px;
-        margin: 0 0 4px 0;
-        color: #333;
-      }
-      p {
-        font-size: 14px;
-        color: #666;
-        margin: 0;
-      }
+
+    .avatar {
+      width: 36px; // Slightly larger avatar
+      height: 36px;
+      border-radius: 50%;
+      margin-right: 12px;
+      object-fit: cover;
+      border: 1px solid #eee; // Subtle border for avatars
     }
-  
-    .actions-section {
-      button {
-        margin-left: 12px;
-        mat-icon {
-          margin-right: 4px;
-        }
-      }
+    .avatar-placeholder {
+      width: 36px; // Slightly larger avatar
+      height: 36px;
+      border-radius: 50%;
+      margin-right: 12px;
+      background-color: #e0e0e0;
+      color: #757575;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500; // Bolder placeholder text
+      font-size: 15px; // Larger placeholder font
+    }
+    span {
+      color: #333;
+      font-weight: 400;
     }
   }
-  
-  .table-container {
-    background-color: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  
-  .pluviometro-table {
-    width: 100%;
-  
-    th.mat-header-cell {
-      background-color: #fafafa;
+
+  .localizacao-cell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .endereco-info { // For the text part of the location
+      flex-grow: 1;
+      margin-right: 8px; // Space between text and icon button
+      font-size: 13px;
       color: #555;
-      font-weight: 500;
     }
-  
-    td.mat-cell, th.mat-header-cell {
-      padding: 12px 16px;
-    }
-  
-    .proprietario-cell {
-      display: flex;
-      align-items: center;
-  
-      .avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        margin-right: 12px;
-        object-fit: cover;
-      }
-      .avatar-placeholder {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        margin-right: 12px;
-        background-color: #e0e0e0;
-        color: #757575;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 14px;
-      }
-    }
-  
-    .localizacao-cell {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-  
-      span {
-        flex-grow: 1;
-      }
-  
+
+    button.mat-mdc-icon-button { // Target the icon button specifically
       mat-icon {
         color: #757575;
       }
     }
   }
-  
+
   .mat-column-select {
-    width: 60px;
+    width: 56px; // Adjusted width for checkbox column
+    padding-right: 8px !important; // Ensure checkbox is not too far left
     text-align: center;
   }
+
+  .mat-column-acoes {
+    width: auto; // Let it size based on content, or set a fixed width if preferred
+    text-align: right; // Align action buttons to the right of the cell
+
+    .mat-mdc-icon-button { // Styling for all icon buttons in the actions column
+      margin-left: 4px; // Space between action buttons
+      &:first-child {
+        margin-left: 0;
+      }
+    }
+  }
+
+  // General styling for table cells if needed for alignment or typography
+  td.mat-mdc-cell {
+    color: #444;
+    font-size: 14px;
+  }
+}
+
+// Ensure proper click targets for icon buttons, especially on mobile
+.mat-mdc-icon-button {
+  // Material design recommends 48x48 tap target
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  .mat-icon {
+    line-height: inherit; // Ensures icon is centered in the button
+  }
+}

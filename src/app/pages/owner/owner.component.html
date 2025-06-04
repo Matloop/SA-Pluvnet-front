@@ -1,3 +1,4 @@
+<!-- src/app/pages/owner/owner.component.html -->
 <div class="pluviometro-container">
   <header class="page-header">
     <div class="title-section">
@@ -82,22 +83,16 @@
         <td mat-cell *matCellDef="let element">
           <div class="localizacao-cell">
             <div class="endereco-info">
-              <!-- Novo div para agrupar as informações de endereço -->
               <span>R. {{ element.rua }}, {{ element.numero }} - {{ element.bairro }}</span>
-              <!-- Você também pode adicionar a cidade se quiser: -->
-              <!-- <span>{{element.cidade}}</span> -->
-              <!-- Se ainda quiser mostrar a string 'localizacao' (lat,lng) original, pode adicionar aqui: -->
-              <!-- <span class="coordenadas">{{element.localizacao}}</span> -->
             </div>
             <button
               mat-icon-button
-              (click)="verLocalizacao(element)"
+              (click)="verLocalizacao(element); $event.stopPropagation()"
               matTooltip="Ver no mapa"
             >
               <mat-icon>{{
                 element.localizacaoIcon || "location_on"
               }}</mat-icon>
-              <!-- Adicionado um ícone padrão -->
             </button>
           </div>
         </td>
@@ -110,18 +105,27 @@
           <button
             mat-icon-button
             color="primary"
-            (click)="editarItem(element)"
-            matTooltip="Editar"
+            (click)="editarItem(element); $event.stopPropagation()"
+            matTooltip="Editar Pluviômetro"
           >
             <mat-icon>edit</mat-icon>
           </button>
           <button
             mat-icon-button
             color="warn"
-            (click)="excluirItem(element)"
-            matTooltip="Excluir"
+            (click)="excluirItem(element); $event.stopPropagation()"
+            matTooltip="Excluir Pluviômetro"
           >
             <mat-icon>delete</mat-icon>
+          </button>
+          <!-- **** NEW BUTTON **** -->
+          <button
+            mat-icon-button
+            color="accent"
+            (click)="verMedicoes(element); $event.stopPropagation()"
+            matTooltip="Ver Medições"
+          >
+            <mat-icon>bar_chart</mat-icon> <!-- Ou list_alt, assessment, etc. -->
           </button>
         </td>
       </ng-container>
@@ -131,6 +135,7 @@
         mat-row
         *matRowDef="let row; columns: displayedColumns"
         (click)="selection.toggle(row)"
+        [class.selected-row]="selection.isSelected(row)"
       ></tr>
     </table>
   </div>
