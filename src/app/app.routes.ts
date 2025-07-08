@@ -7,6 +7,8 @@ import { AuthGuard } from './services/authguard.service';
 import { AuthCallbackComponent } from './components/auth-callback/auth-callback.component';
 import { OwnerComponent } from './pages/owner/owner.component';
 import { AddressComponent } from './pages/address/address.component';
+import { authGuard } from './guards/auth.guard';
+import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
     {
@@ -34,9 +36,12 @@ export const routes: Routes = [
         canActivate: [AuthGuard]
     },
     {
-        path: "owner",
+        path: "owner", // This is the route we want to protect
         loadComponent: () => import('./pages/owner/owner.component').then(m => m.OwnerComponent),
-        canActivate: [AuthGuard]
+        canActivate: [authGuard, roleGuard], // <-- Chain the guards
+        data: {
+            requiredRole: 'OWNER' // <-- Pass the required role here
+        }
     },
     {
         path: "address",

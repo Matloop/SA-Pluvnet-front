@@ -4,16 +4,16 @@ import {
   OverlayModule
 } from "./chunk-4WSNESIB.js";
 import {
+  CdkScrollableModule,
+  ScrollDispatcher
+} from "./chunk-ZIYKALSF.js";
+import {
   animate,
   state,
   style,
   transition,
   trigger
 } from "./chunk-ENSFIOPC.js";
-import {
-  CdkScrollableModule,
-  ScrollDispatcher
-} from "./chunk-ZIYKALSF.js";
 import "./chunk-43O5MBEC.js";
 import {
   A11yModule,

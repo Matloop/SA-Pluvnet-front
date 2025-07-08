@@ -12,7 +12,7 @@ const USE_SESSION_STORAGE = true; // Mude para true se preferir sessionStorage
 interface UserInfo {
   sub: string; // Subject (geralmente email ou user ID)
   name?: string; // Nome (se houver)
-  roles?: string[]; // Roles/Permissões (se houver)
+  business_role: string; // Roles/Permissões (se houver)
   exp?: number; // Timestamp de expiração (padrão JWT)
   // Adicione outras claims que seu backend envia
 }

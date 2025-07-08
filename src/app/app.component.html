@@ -9,10 +9,19 @@
         <img src="../assets/svg/logopluv.svg" alt="PluvNet Logo" class="logo">
       </div>
       <mat-nav-list>
-        <a mat-list-item routerLink="/owner" routerLinkActive="active-link">
+        <!--
+          HERE IS THE CHANGE!
+          This link now only shows if the user's role is 'OWNER'.
+        -->
+        <a *ngIf="authService.currentUser()?.business_role === 'OWNER'"
+           mat-list-item
+           routerLink="/owner"
+           routerLinkActive="active-link">
           <mat-icon matListItemIcon>view_list</mat-icon>
           <span matListItemTitle>Pluviômetros</span>
         </a>
+
+        <!-- This link is visible to all authenticated users -->
         <a mat-list-item routerLink="/calendario" routerLinkActive="active-link">
           <mat-icon matListItemIcon>calendar_today</mat-icon>
           <span matListItemTitle>Calendário</span>
@@ -27,9 +36,12 @@
         <button mat-icon-button matTooltip="Notificações">
           <mat-icon>notifications</mat-icon>
         </button>
+        <!--
+          BONUS: Dynamically display the user's name from the token
+        -->
         <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
           <img src="https://i.pravatar.cc/30?u=max.augusto" alt="User Avatar" class="user-avatar">
-          <span>Max Augusto</span>
+          <span>{{ authService.currentUser()?.name || 'Usuário' }}</span>
           <mat-icon>arrow_drop_down</mat-icon>
         </button>
         <mat-menu #userMenu="matMenu">

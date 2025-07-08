@@ -10,6 +10,7 @@ import {
   PortalModule,
   TemplatePortal
 } from "./chunk-4WSNESIB.js";
+import "./chunk-ZIYKALSF.js";
 import {
   animate,
   animateChild,
@@ -20,7 +21,6 @@ import {
   transition,
   trigger
 } from "./chunk-ENSFIOPC.js";
-import "./chunk-ZIYKALSF.js";
 import "./chunk-43O5MBEC.js";
 import {
   A11yModule,

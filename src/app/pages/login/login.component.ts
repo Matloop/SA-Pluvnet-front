@@ -3,13 +3,22 @@ import { DefaultLoginLayoutComponent } from '../../components/default-login-layo
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PrimaryInputComponent } from '../../components/primary-input/primary-input.component';
 import { Router } from '@angular/router';
-import { LoginService } from '../../services/login.service'; // Assuming you have this service
+import { LoginService } from '../../services/login.service';
 import { ToastrService } from 'ngx-toastr';
-import { CommonModule } from '@angular/common'; // For *ngIf if needed
+import { CommonModule } from '@angular/common';
+
+// 1. IMPORT THE AUTH SERVICE
+import { AuthService } from '../../services/auth.service';
 
 interface LoginForm{
-  email : FormControl<string | null>, // It's good practice to type FormControl values
+  email : FormControl<string | null>,
   password : FormControl<string | null>
+}
+
+// Interface for the expected login response from your backend
+interface LoginResponse {
+  token: string;
+  // you might also have other fields like 'name', etc.
 }
 
 @Component({
@@ -22,7 +31,7 @@ interface LoginForm{
     PrimaryInputComponent,
   ],
   providers: [
-    LoginService // Provide service here or at a higher level
+    LoginService
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
@@ -31,9 +40,11 @@ export class LoginComponent {
   loginForm: FormGroup<LoginForm>;
 
   constructor(
-    private router : Router,
-    private loginService : LoginService,
-    private toastr: ToastrService // Renamed for clarity
+    private router: Router,
+    private loginService: LoginService,
+    private toastr: ToastrService,
+    // 2. INJECT THE AUTH SERVICE INTO THE CONSTRUCTOR
+    private authService: AuthService
   ){
     this.loginForm = new FormGroup<LoginForm>({
       email: new FormControl('', [Validators.required, Validators.email]),
@@ -49,19 +60,35 @@ export class LoginComponent {
     const email = this.loginForm.value.email;
     const password = this.loginForm.value.password;
 
-    if (email && password) { // Ensure values are not null before sending
+    if (email && password) {
+      // 3. UPDATE THE SUBSCRIBE BLOCK
       this.loginService.login(email, password).subscribe({
-        next: () =>  {
-          this.toastr.success("Login feito com sucesso!");
-          this.router.navigate(["/user"]); // Or navigateByUrl if needed
+        // The 'response' object (containing the token) is passed to 'next'
+        next: (response: LoginResponse) =>  {
+          // 4. SAVE THE TOKEN USING THE AUTH SERVICE AND CHECK IF IT WAS SUCCESSFUL
+          const wasTokenSaved = this.authService.saveToken(response.token);
+
+          if (wasTokenSaved) {
+            // 5. ONLY NAVIGATE *AFTER* THE TOKEN IS SAVED
+            this.toastr.success("Login feito com sucesso!");
+
+            // Optional but recommended: Navigate based on the user's role
+            const userRole = this.authService.currentUser()?.business_role;
+            if (userRole === 'OWNER') {
+              this.router.navigate(['/owner']);
+            } else {
+              this.router.navigate(['/user']); // Default page for other roles
+            }
+
+          } else {
+            // This happens if the token from the backend is malformed or expired
+            this.toastr.error("Ocorreu um problema de autenticação. Tente novamente.");
+          }
         },
-        error: (err) => { // It's good to inspect the error
+        error: (err) => {
           console.error("Login error:", err);
-          // Example: Check for specific error message for wrong credentials
           if (err.status === 401 || err.status === 403) {
-             // This is where you'd trigger the red banner if you had a custom component for it
-             // For now, a toastr message:
-            this.toastr.error("Usuário ou senha errados, tente novamente!");
+            this.toastr.error("Usuário ou senha inválidos, tente novamente!");
           } else {
             this.toastr.error("Erro inesperado durante o login.");
           }
@@ -76,14 +103,11 @@ export class LoginComponent {
     this.router.navigate(["/signup"]);
   }
 
-  // This method is no longer called by the template but kept as per "no logic change"
   loginWithGoogle(){
     window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   }
 
   navigateToForgotPassword() {
-    // Implement navigation if you have a forgot password page
     this.toastr.info("Funcionalidade 'Esqueci minha senha' ainda não implementada.");
-    // this.router.navigate(['/forgot-password']);
   }
 }
