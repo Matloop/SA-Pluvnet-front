@@ -1,43 +1,49 @@
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { catchError, Observable, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Owner } from '../models/owner';
+
+// Interface for the simple dropdown list
+export interface OwnerSelectionDTO {
+  id: number;
+  name: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class OwnerService {
-url : string = "http://localhost:8080/owner"
-  
-  constructor(private http: HttpClient) { }
+  private apiUrl = "http://localhost:8080/owners"; // Plural 'owners'
+  private http = inject(HttpClient);
 
-  getOwners(): Observable<Owner[]>{
-    return this.http.get<Owner[]>(this.url);
+  // Gets the lightweight list of owners for the equipment form dropdown
+  getAllOwnersForSelection(): Observable<OwnerSelectionDTO[]> {
+    return this.http.get<OwnerSelectionDTO[]>(`${this.apiUrl}/all-for-selection`);
+  }
+
+  // Your existing methods for a separate Owner Management page
+  getOwners(): Observable<Owner[]> {
+    return this.http.get<Owner[]>(this.apiUrl);
   }
 
   addOwner(owner: Owner): Observable<Owner> {
-    return this.http.post<Owner>(this.url,owner)
-    .pipe(
-      catchError(this.handleError)
-    )
+    return this.http.post<Owner>(this.apiUrl, owner).pipe(catchError(this.handleError));
   }
 
-  updateOwner(owner: Owner): Observable<Owner> { // <--- THIS METHOD MUST EXIST
-    if (owner.id === null || owner.id === undefined) {
-      console.error('Owner ID is required for update operation in service.');
-      throw new Error('Owner ID is required for update.');
+  updateOwner(owner: Owner): Observable<Owner> {
+    if (!owner.id) {
+      return throwError(() => new Error('Owner ID is required for update.'));
     }
-    return this.http.put<Owner>(`${this.url}/${owner.id}`, owner);
+    return this.http.put<Owner>(`${this.apiUrl}/${owner.id}`, owner);
   }
 
   deleteOwner(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.url}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('Erro no serviço:', error);
-    return throwError(() => new Error('Ocorreu um erro. Tente novamente mais tarde.'));
+    console.error('An error occurred in OwnerService:', error);
+    return throwError(() => new Error('Something went wrong with the owner service; please try again later.'));
   }
-
-  
 }

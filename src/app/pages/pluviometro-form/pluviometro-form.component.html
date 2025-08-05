@@ -1,34 +1,16 @@
 <h2 mat-dialog-title>{{ dialogTitle }}</h2>
 <mat-dialog-content>
   <form [formGroup]="pluviometroForm" class="pluviometro-form-fields">
-    <mat-form-field appearance="outline">
-      <mat-label>Nome do Proprietário</mat-label>
-      <input matInput formControlName="proprietarioNome" required>
-      <mat-error *ngIf="pluviometroForm.get('proprietarioNome')?.hasError('required')">
-        Nome do proprietário é obrigatório.
-      </mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Email do Proprietário</mat-label>
-      <input matInput formControlName="email" type="email" required>
-      <mat-error *ngIf="pluviometroForm.get('email')?.hasError('required')">
-        Email é obrigatório.
-      </mat-error>
-      <mat-error *ngIf="pluviometroForm.get('email')?.hasError('email')">
-        Formato de email inválido.
-      </mat-error>
-    </mat-form-field>
+    <!-- The Owner Selection dropdown has been completely removed from this form -->
 
     <mat-form-field appearance="outline">
       <mat-label>Descrição do Pluviômetro</mat-label>
-      <input matInput formControlName="descricao" required>
-       <mat-error *ngIf="pluviometroForm.get('descricao')?.hasError('required')">
+      <input matInput formControlName="description" required>
+       <mat-error *ngIf="pluviometroForm.get('description')?.hasError('required')">
         Descrição é obrigatória.
       </mat-error>
     </mat-form-field>
 
-    <!-- Campo de CEP com validações e feedback da busca -->
     <mat-form-field appearance="outline">
       <mat-label>CEP</mat-label>
       <input matInput formControlName="cep" placeholder="00000-000" required>
@@ -38,42 +20,34 @@
       <mat-error *ngIf="pluviometroForm.get('cep')?.hasError('pattern')">
         Formato de CEP inválido (Ex: 01001-000 ou 01001000).
       </mat-error>
-      <mat-error *ngIf="pluviometroForm.get('cep')?.hasError('cepNaoEncontrado')">
-        CEP não encontrado ou inválido.
-      </mat-error>
-      <mat-error *ngIf="pluviometroForm.get('cep')?.hasError('cepConsultaFalhou')">
-        Falha ao consultar o CEP. Tente novamente.
-      </mat-error>
     </mat-form-field>
 
-    <!-- Campos preenchidos pela busca de CEP -->
     <mat-form-field appearance="outline">
         <mat-label>Cidade</mat-label>
         <input matInput formControlName="cidade" required>
         <mat-error *ngIf="pluviometroForm.get('cidade')?.hasError('required')">
           Cidade é obrigatória.
         </mat-error>
-      </mat-form-field>
+    </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Bairro</mat-label>
-        <input matInput formControlName="bairro" required>
-        <mat-error *ngIf="pluviometroForm.get('bairro')?.hasError('required')">
-          Bairro é obrigatório.
-        </mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Rua</mat-label>
-        <input matInput formControlName="rua" required>
-        <mat-error *ngIf="pluviometroForm.get('rua')?.hasError('required')">
-          Rua é obrigatória.
-        </mat-error>
-      </mat-form-field>
-
-    <!-- Campos manuais -->
     <mat-form-field appearance="outline">
-      <mat-label>Número da propriedade</mat-label>
+      <mat-label>Bairro</mat-label>
+      <input matInput formControlName="bairro" required>
+      <mat-error *ngIf="pluviometroForm.get('bairro')?.hasError('required')">
+        Bairro é obrigatório.
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Rua</mat-label>
+      <input matInput formControlName="rua" required>
+      <mat-error *ngIf="pluviometroForm.get('rua')?.hasError('required')">
+        Rua é obrigatória.
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Número</mat-label>
       <input matInput formControlName="numero" required>
       <mat-error *ngIf="pluviometroForm.get('numero')?.hasError('required')">
         Número é obrigatório.
@@ -83,7 +57,6 @@
     <mat-form-field appearance="outline">
       <mat-label>Complemento</mat-label>
       <input matInput formControlName="complemento" >
-      <!-- O complemento geralmente não é obrigatório, então não adicionei mat-error para 'required' -->
     </mat-form-field>
   </form>
 </mat-dialog-content>

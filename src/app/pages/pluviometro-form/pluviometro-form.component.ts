@@ -1,5 +1,4 @@
-// src/app/pages/pluviometro-form/pluviometro-form.component.ts
-import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,43 +8,23 @@ import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validator
 import { ViaCepResponse, ViaCepService } from '../../services/via-cep.service';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter, switchMap, takeUntil, tap, catchError } from 'rxjs/operators';
+import { PluviometroElement } from '../owner/owner.component';
 
-// --- DEFINE OR IMPORT THE INTERFACE HERE ---
-// This interface should be identical to the one in owner.component.ts
-export interface PluviometroElement {
-  id: number;
-  proprietarioNome: string;
-  email: string;
-  descricao: string;
-  cep: string;
-  cidade: string;
-  bairro: string;
-  rua: string;
-  numero: string;
-  complemento?: string;
-  localizacaoIcon: string;
-  // --- ADD THE MISSING PROPERTY ---
-  proprietarioAvatarUrl?: string; 
-}
-
-
-export interface PluviometroFormData {
-  pluviometro?: PluviometroElement;
-  isEditMode: boolean;
-}
-
-// This interface defines the data that the form returns.
-// It's a good practice to separate the form's output from the full element.
+// This is the data structure the form RETURNS. It no longer contains an ownerId.
 export interface PluviometroFormResult {
-  proprietarioNome: string;
-  email: string;
-  descricao: string;
+  description: string;
   cep: string;
   cidade: string;
   bairro: string;
   rua: string;
   numero: string;
   complemento?: string;
+}
+
+// This is the data PASSED TO the form.
+export interface PluviometroFormData {
+  pluviometro?: PluviometroElement; // PluviometroElement is defined in owner.component.ts
+  isEditMode: boolean;
 }
 
 @Component({
@@ -54,6 +33,7 @@ export interface PluviometroFormResult {
   imports: [
     CommonModule, ReactiveFormsModule, MatDialogModule, MatFormFieldModule,
     MatInputModule, MatButtonModule
+    // MatSelectModule is no longer needed here
   ],
   templateUrl: './pluviometro-form.component.html',
   styleUrls: ['./pluviometro-form.component.scss']
@@ -64,19 +44,19 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
   dialogTitle: string;
   private destroy$ = new Subject<void>();
 
+  private fb = inject(FormBuilder);
+  private viaCepService = inject(ViaCepService);
+
   constructor(
-    private fb: FormBuilder,
-    public dialogRef: MatDialogRef<PluviometroFormComponent, PluviometroFormResult>, // <-- Note the return type
-    @Inject(MAT_DIALOG_DATA) public data: PluviometroFormData,
-    private viaCepService: ViaCepService
+    public dialogRef: MatDialogRef<PluviometroFormComponent, PluviometroFormResult>,
+    @Inject(MAT_DIALOG_DATA) public data: PluviometroFormData
   ) {
     this.isEditMode = data.isEditMode;
     this.dialogTitle = this.isEditMode ? 'Editar Pluviômetro' : 'Adicionar Novo Pluviômetro';
 
+    // The form is now simpler and does not include an ownerId field.
     this.pluviometroForm = this.fb.group({
-      proprietarioNome: [data.pluviometro?.proprietarioNome || '', Validators.required],
-      email: [data.pluviometro?.email || '', [Validators.required, Validators.email]],
-      descricao: [data.pluviometro?.descricao || '', Validators.required],
+      description: [data.pluviometro?.descricao || '', Validators.required],
       cep: [data.pluviometro?.cep || '', [Validators.required, Validators.pattern(/^\d{5}-?\d{3}$/)]],
       cidade: [{ value: data.pluviometro?.cidade || '', disabled: true }, Validators.required],
       bairro: [{ value: data.pluviometro?.bairro || '', disabled: true }, Validators.required],
@@ -88,15 +68,11 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.setupCepLookup();
+  }
 
-    if (this.isEditMode && this.data.pluviometro) {
-      if (this.data.pluviometro.cep) {
-        this.pluviometroForm.get('cep')?.setValue(this.data.pluviometro.cep);
-      }
-      if (this.data.pluviometro.cidade) this.pluviometroForm.get('cidade')?.enable();
-      if (this.data.pluviometro.bairro) this.pluviometroForm.get('bairro')?.enable();
-      if (this.data.pluviometro.rua) this.pluviometroForm.get('rua')?.enable();
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private setupCepLookup(): void {
@@ -107,10 +83,7 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
         debounceTime(700),
         distinctUntilChanged(),
         filter((cepInput: string) => !!(cepInput && cepInput.replace(/\D/g, '').length === 8)),
-        switchMap((cepInput: string) => {
-          this.clearAddressFields(false);
-          return this.viaCepService.buscarCep(cepInput.replace(/\D/g, ''));
-        }),
+        switchMap((cepInput: string) => this.viaCepService.buscarCep(cepInput.replace(/\D/g, ''))),
         tap((addressData: ViaCepResponse | null) => {
           if (addressData && !addressData.erro) {
             this.fillAddressFields(addressData);
@@ -146,18 +119,12 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   onCancel(): void {
     this.dialogRef.close();
   }
 
   onSave(): void {
     if (this.pluviometroForm.valid) {
-      // Return only the raw form values. The parent component will handle adding IDs.
       const result: PluviometroFormResult = this.pluviometroForm.getRawValue();
       this.dialogRef.close(result);
     } else {
