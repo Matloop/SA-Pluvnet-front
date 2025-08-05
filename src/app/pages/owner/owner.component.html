@@ -1,8 +1,8 @@
 <div class="pluviometro-container">
   <header class="page-header">
     <div class="title-section">
-      <h1>Pluvioêmetros</h1>
-      <p>Gerencie os pluviomêtros cadastrados e suas medições</p>
+      <h1>Pluviômetros</h1>
+      <p>Gerencie os pluviômetros cadastrados e suas medições</p>
     </div>
     <div class="actions-section">
       <button
@@ -24,138 +24,129 @@
     </div>
   </header>
 
-  <div class="table-container" mat-elevation-z8>
-    <table mat-table [dataSource]="dataSource" class="pluviometro-table">
-      <ng-container matColumnDef="select">
-        <th mat-header-cell *matHeaderCellDef class="checkbox-column">
-          <mat-checkbox
-            (change)="$event ? masterToggle() : null"
-            (checked)="selection.hasValue() && isAllSelected()"
-            [indeterminate]="selection.hasValue() && !isAllSelected()"
-          >
-          </mat-checkbox>
-        </th>
-        <td mat-cell *matCellDef="let row" class="checkbox-column">
-          <mat-checkbox
-            (click)="$event.stopPropagation()"
-            (change)="$event ? selection.toggle(row) : null"
-            [checked]="selection.isSelected(row)"
-          ></mat-checkbox>
-        </td>
-      </ng-container>
+  <!-- This is the container for the table and the spinner -->
+  <div class="table-container-wrapper">
+    <!-- Loading Spinner Overlay -->
+    <div *ngIf="isLoading" class="loading-shade">
+      <mat-spinner></mat-spinner>
+    </div>
 
-      <!--Onwer column-->
-      <ng-container matColumnDef="proprietario">
-        <th mat-header-cell *matHeaderCellDef>Proprietário</th>
-        <td mat-cell *matCellDef="let element">
-          <div class="proprietario-cell">
-            <img
-              *ngIf="element.proprietarioAvatarUrl"
-              [src]="element.proprietarioAvatarUrl"
-              alt="Avatar de {{ element.proprietario }}"
-              class="avatar"
-            />
-            <div
-              *ngIf="!element.proprietarioAvatarUrl"
-              class="avatar-placeholder"
+    <!-- Table Container -->
+    <div class="table-container" [class.content-hidden]="isLoading" mat-elevation-z8>
+      <table mat-table [dataSource]="dataSource" class="pluviometro-table">
+        <!-- Select Column -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef class="checkbox-column">
+            <mat-checkbox
+              (change)="$event ? masterToggle() : null"
+              [checked]="selection.hasValue() && isAllSelected()"
+              [indeterminate]="selection.hasValue() && !isAllSelected()"
+              aria-label="Selecionar todos os itens"
             >
-              {{ element.proprietarioNome.charAt(0).toUpperCase() }}
+            </mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row" class="checkbox-column">
+            <mat-checkbox
+              (click)="$event.stopPropagation()"
+              (change)="$event ? selection.toggle(row) : null"
+              [checked]="selection.isSelected(row)"
+              [aria-label]="checkboxLabel(row)"
+            ></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- All other columns (proprietario, email, etc.) remain exactly the same -->
+        <ng-container matColumnDef="proprietario">
+          <th mat-header-cell *matHeaderCellDef>Proprietário</th>
+          <td mat-cell *matCellDef="let element">
+            <div class="proprietario-cell">
+              <div class="avatar-placeholder">
+                {{ element.proprietarioNome.charAt(0).toUpperCase() }}
+              </div>
+              <span>{{ element.proprietarioNome }}</span>
             </div>
-            <span>{{ element.proprietarioNome }}</span>
-          </div>
-        </td>
-      </ng-container>
-      <!--email column-->
-      <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef>Email</th>
-        <td mat-cell *matCellDef="let element">{{ element.email }}</td>
-      </ng-container>
+          </td>
+        </ng-container>
 
-      <!--description column-->
-      <ng-container matColumnDef="descricao">
-        <th mat-header-cell *matHeaderCellDef>Descrição do pluviomêtro</th>
-        <td mat-cell *matCellDef="let element">{{ element.descricao }}</td>
-      </ng-container>
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let element">{{ element.email }}</td>
+        </ng-container>
 
-      <!--location column-->
-      <ng-container matColumnDef="localizacao">
-        <th mat-header-cell *matHeaderCellDef>Localização</th>
-        <td mat-cell *matCellDef="let element">
-          <div class="localizacao-cell">
-            <div class="endereco-info">
-              <span>R. {{ element.rua }}, {{ element.numero }}</span>
-              <span class="bairro-cidade"
-                >{{ element.bairro }} - {{ element.cidade }}</span
+        <ng-container matColumnDef="descricao">
+          <th mat-header-cell *matHeaderCellDef>Descrição do Pluviômetro</th>
+          <td mat-cell *matCellDef="let element">{{ element.descricao }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="localizacao">
+          <th mat-header-cell *matHeaderCellDef>Localização</th>
+          <td mat-cell *matCellDef="let element">
+            <div class="localizacao-cell">
+              <div class="endereco-info">
+                <span>R. {{ element.rua }}, {{ element.numero }}</span>
+                <span class="bairro-cidade">{{ element.bairro }} - {{ element.cidade }}</span>
+              </div>
+              <button
+                mat-icon-button
+                (click)="verLocalizacao(element); $event.stopPropagation()"
+                matTooltip="Ver no mapa"
               >
+                <mat-icon>{{ element.localizacaoIcon || "location_on" }}</mat-icon>
+              </button>
             </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="acoes">
+          <th mat-header-cell *matHeaderCellDef class="actions-column-header">Ações</th>
+          <td mat-cell *matCellDef="let element" class="actions-column">
             <button
               mat-icon-button
-              (click)="verLocalizacao(element); $event.stopPropagation()"
-              matToolTip="Ver no map"
+              color="accent"
+              (click)="verMedicoes(element); $event.stopPropagation()"
+              matTooltip="Ver medições do pluviômetro"
             >
-              <mat-icon
-                >{{ element.localizacaoIcon || "location_on" }}
-              </mat-icon>
-            </button>
-          </div>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="acoes">
-        <th mat-header-cell *matHeaderCellDef class="actions-column-header">
-          Ações
-        </th>
-        <td mat-cell *matCellDef="let element" class="actions-column">
-          <button
-            mat-icon-button
-            color="accent"
-            (click)="verMedicoes(element); $event.stopPropagation()"
-            matToootip="Ver medições do pluviomêtro"
-          >
-            <mat-icon>bar_chart</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            [matMenuTriggerFor]="menu"
-            (click)="$event.stopPropagation()"
-            matToolTip="Mais ações"
-          >
-            <mat-icon>more_vert</mat-icon>
-          </button>
-          <mat-menu #menu="matMenu">
-            <button mat-menu-item (click)="editarItem(element)">
-              <mat-icon>edit</mat-icon>
-              <span>Editar</span>
+              <mat-icon>bar_chart</mat-icon>
             </button>
             <button
-              mat-menu-item
-              color="warn"
-              (click)="excluirItem(element)"
-
+              mat-icon-button
+              [matMenuTriggerFor]="menu"
+              (click)="$event.stopPropagation()"
+              matTooltip="Mais ações"
             >
-              <mat-icon color="warn">delete</mat-icon>
-              <span class="warn-text">Excluir</span>
-          </button>
-          </mat-menu>
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr
-        mat-row
-        *matRowDef="let row; columns: displayedColumns"
-        (click)="selection.toggle(row)"
-        [class.selected-row]="selection.isSelected(row)"
-        tabindex="0"
-        (keydown.enter)="selection.toggle(row)"
-        (keydown.space)="selection.toggle(row)"
-      ></tr>
-
-      <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
-            Nenhum pluviomêtro encontrado
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="editarItem(element)">
+                <mat-icon>edit</mat-icon>
+                <span>Editar</span>
+              </button>
+              <button mat-menu-item color="warn" (click)="excluirItem(element)">
+                <mat-icon color="warn">delete</mat-icon>
+                <span class="warn-text">Excluir</span>
+              </button>
+            </mat-menu>
           </td>
-      </tr>
-    </table>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          (click)="selection.toggle(row)"
+          [class.selected-row]="selection.isSelected(row)"
+          tabindex="0"
+          (keydown.enter)="selection.toggle(row)"
+          (keydown.space)="selection.toggle(row)"
+        ></tr>
+
+        <!-- Row shown when there is no data. -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+            Nenhum pluviômetro encontrado para este usuário.
+          </td>
+        </tr>
+      </table>
+    </div>
   </div>
 </div>

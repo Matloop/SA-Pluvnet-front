@@ -1,5 +1,4 @@
-// src/app/pages/owner/owner.component.ts
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
 import { MatCheckboxModule } from "@angular/material/checkbox";
@@ -8,24 +7,23 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { SelectionModel } from "@angular/cdk/collections";
 import { MatDialog, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
-import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar"; // Import MatSnackBar
-import {
-  PluviometroFormComponent,
-  PluviometroFormData,
-} from "../pluviometro-form/pluviometro-form.component";
-import {
-  MedicaoFormComponent,
-  MedicaoFormData,
-  MedicaoFormResult,
-} from "../medicao-form/medicao-form.component";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { PluviometroFormComponent, PluviometroFormData } from "../pluviometro-form/pluviometro-form.component";
+import { MedicaoFormComponent, MedicaoFormData, MedicaoFormResult } from "../medicao-form/medicao-form.component";
 import { MeasurementService } from "../../services/measurement.service";
-import { MeasurementRecordDTO } from "../../models/measurement-record.dto";
 import { MatMenuModule } from "@angular/material/menu";
-import { Subject, takeUntil } from "rxjs";
+import { Subject, takeUntil, finalize } from "rxjs";
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
+// --- NEW IMPORTS ---
+import { EquipmentService, EquipmentDTO, CreateEquipmentPayload } from '../../services/equipment.service';
+import { AuthService } from '../../services/auth.service';
+import { MeasurementRecordDTO } from "../../models/measurement-record.dto";
+
+// This is the VIEW MODEL for your table. It remains the same.
 export interface PluviometroElement {
   id: number;
   proprietarioNome: string;
-  proprietarioAvatarUrl?: string;
   email: string;
   descricao: string;
   cep: string;
@@ -34,87 +32,87 @@ export interface PluviometroElement {
   rua: string;
   numero: string;
   complemento?: string;
-  localizacaoIcon?: string;
+  localizacaoIcon: string;
 }
-
-const ELEMENT_DATA: PluviometroElement[] = [
-  {
-    id: 1,
-    proprietarioNome: "Max Augusto",
-    email: "max.augusto@gmail.com",
-    descricao: "Central Estação",
-    cep: "12345-678",
-    cidade: "Blumenau",
-    bairro: "Centro",
-    rua: "Rua das Palmeiras",
-    numero: "100",
-    complemento: "Ap 101",
-    localizacaoIcon: "map",
-  },
-  {
-    id: 2,
-    proprietarioNome: "Sarah Brown",
-    email: "sarah.brown@gmail.com",
-    descricao: "Jardim Monitor",
-    cep: "98765-432",
-    cidade: "Blumenau",
-    bairro: "Itoupava",
-    rua: "Rua dos Pinheiros",
-    numero: "200",
-    complemento: "",
-    localizacaoIcon: "map",
-  },
-];
 
 @Component({
   selector: "app-owner",
   standalone: true,
   imports: [
-    CommonModule,
-    MatTableModule,
-    MatCheckboxModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTooltipModule,
-    MatDialogModule,
-    MatSnackBarModule,
-    MatMenuModule
+    CommonModule, MatTableModule, MatCheckboxModule, MatButtonModule,
+    MatIconModule, MatTooltipModule, MatDialogModule, MatSnackBarModule,
+    MatMenuModule, MatProgressSpinnerModule // Added for loading indicator
   ],
   templateUrl: "./owner.component.html",
   styleUrls: ["./owner.component.scss"],
 })
-export class OwnerComponent implements OnInit {
-  displayedColumns: string[] = [
-    "select",
-    "proprietario",
-    "email",
-    "descricao",
-    "localizacao",
-    "acoes",
-  ];
+export class OwnerComponent implements OnInit, OnDestroy {
+  displayedColumns: string[] = ["select", "proprietario", "email", "descricao", "localizacao", "acoes"];
   dataSource = new MatTableDataSource<PluviometroElement>([]);
   selection = new SelectionModel<PluviometroElement>(true, []);
+  isLoading = true; // Start with loading true
 
   private destroy$ = new Subject<void>();
+  
+  // Use modern `inject()` for cleaner dependency injection
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+  private measurementService = inject(MeasurementService);
+  private equipmentService = inject(EquipmentService);
+  private authService = inject(AuthService);
 
-  constructor(
-    public dialog: MatDialog,
-    private measurementService: MeasurementService, 
-    private snackBar: MatSnackBar 
-  ) {}
+  constructor() {}
 
   ngOnInit(): void {
     this.loadPluviometros();
   }
 
-  ngOnDestroy(): void{
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
+  
+  // This helper function converts the backend data (DTO) to the format your table needs (ViewModel)
+  private mapDtoToViewModel(dto: EquipmentDTO): PluviometroElement {
+    return {
+      id: dto.id,
+      descricao: dto.name,
+      proprietarioNome: dto.owner.name,
+      email: dto.owner.email,
+      cep: dto.address.cep,
+      cidade: dto.address.city,
+      bairro: dto.address.neighborhood,
+      rua: dto.address.street,
+      numero: dto.address.number,
+      complemento: dto.address.complement,
+      localizacaoIcon: 'map'
+    };
+  }
 
-  loadPluviometros(): void{
-    this.dataSource.data = ELEMENT_DATA;
-    this.selection.clear();
+  loadPluviometros(): void {
+    const ownerId = this.authService.currentUser()?.userId;
+    if (ownerId === undefined) {
+      this.snackBar.open('Erro: ID do usuário não encontrado. Faça login novamente.', 'Fechar', { duration: 5000 });
+      this.isLoading = false;
+      return;
+    }
+    
+    this.isLoading = true;
+    this.equipmentService.getEquipmentsByOwnerId(ownerId)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isLoading = false) // Ensures spinner is turned off
+      )
+      .subscribe({
+        next: (dtos) => {
+          this.dataSource.data = dtos.map(this.mapDtoToViewModel);
+          this.selection.clear();
+        },
+        error: (err) => {
+          console.error("Erro ao carregar pluviômetros:", err);
+          this.snackBar.open('Falha ao carregar pluviômetros do servidor.', 'Fechar', { duration: 5000 });
+        }
+      });
   }
 
   isAllSelected() {
@@ -136,46 +134,68 @@ export class OwnerComponent implements OnInit {
     return `${this.selection.isSelected(row) ? 'deselect' : 'selected'} pluviomêtro ${row.descricao}`;
   }
 
-  openPluviometroForm(
-    isEditMode: boolean,
-    pluviometro?: PluviometroElement
-  ): void {
-    const dialogData: PluviometroFormData = {
-      isEditMode: isEditMode,
-      pluviometro: pluviometro ? {...pluviometro} : undefined //pass coping for editing
-    };
+  openPluviometroForm(isEditMode: boolean, pluviometro?: PluviometroElement): void {
+    const dialogData: PluviometroFormData = { isEditMode, pluviometro };
 
-    const dialogRef: MatDialogRef<PluviometroFormComponent, PluviometroElement> = this.dialog.open(PluviometroFormComponent, {
-      width: "600px",
-      data: dialogData,
-      disableClose: true
+    const dialogRef = this.dialog.open(PluviometroFormComponent, {
+      width: "600px", data: dialogData, disableClose: true
     });
 
-    dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe(result => {
-      if (result) {
-        // result here is also PluviometroElement if PluviometroFormComponent returns it directly
-        if (isEditMode && pluviometro) {
-          // Call ownerService.updateOwner(...)
-          const index = this.dataSource.data.findIndex(
-            (p) => p.id === result.id
-          );
-          if (index > -1) {
-            const currentData = this.dataSource.data;
-            currentData[index] = result;
-            this.dataSource.data = currentData;
-            this.snackBar.open('Pluviômetro atualizado com sucesso!', 'Fechar', { duration: 3000, panelClass: ['success-snackbar'] });
-          
-            };
-          
-          } else {
-            const newPluviometroWithId = {...result, id: Math.max(...this.dataSource.data.map(p => p.id), 0) + 1}
-            this.dataSource.data = [...this.dataSource.data, newPluviometroWithId];
-            this.snackBar.open('Pluviômetro adicionado com sucesso!', 'Fechar', { duration: 3000, panelClass: ['success-snackbar'] });
-          }
-        }
-        this.selection.clear();
-    });  
+    dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe(formData => {
+      if (!formData) return;
+
+      const owner = this.authService.currentUser();
+      if(!owner) {
+        this.snackBar.open('Sessão expirada. Por favor, faça login novamente.', 'Fechar', { duration: 5000 });
+        this.authService.logout();
+        return;
+      }
       
+      const payload: CreateEquipmentPayload = {
+        name: formData.descricao,
+        ownerId: owner.userId,
+        address: {
+          cep: formData.cep.replace(/\D/g, ''), // Ensure CEP is only numbers
+          street: formData.rua,
+          number: formData.numero,
+          complement: formData.complemento,
+          city: formData.cidade,
+          neighborhood: formData.bairro,
+        },
+      };
+
+      if (isEditMode && pluviometro) {
+        this.updatePluviometro(pluviometro.id, payload);
+      } else {
+        this.createPluviometro(payload);
+      }
+    });
+  }
+
+  createPluviometro(payload: CreateEquipmentPayload): void {
+    this.isLoading = true;
+    this.equipmentService.createEquipment(payload)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Pluviômetro adicionado com sucesso!', 'Fechar', { duration: 3000 });
+          this.loadPluviometros(); // Refresh the table
+        },
+        error: err => this.snackBar.open(`Erro ao adicionar: ${err.message}`, 'Fechar', { duration: 5000 })
+      });
+  }
+  
+  updatePluviometro(id: number, payload: CreateEquipmentPayload): void {
+    this.isLoading = true;
+    this.equipmentService.updateEquipment(id, payload)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Pluviômetro atualizado com sucesso!', 'Fechar', { duration: 3000 });
+          this.loadPluviometros(); // Refresh the table with fresh data
+        },
+        error: err => this.snackBar.open(`Erro ao atualizar: ${err.message}`, 'Fechar', { duration: 5000 })
+      });
   }
 
   adicionarPluviometro(): void {
@@ -187,18 +207,18 @@ export class OwnerComponent implements OnInit {
   }
 
   excluirItem(element: PluviometroElement): void {
-    // TODO: Call ownerService.deleteOwner(element.id)
-    // Consider implications if measurements exist for this pluviometer (backend should handle or provide feedback)
-    console.log("Excluir Pluviômetro:", element);
-    this.dataSource.data = this.dataSource.data.filter(
-      (item) => item.id !== element.id
-    );
-    this.selection.deselect(element);
-    this.snackBar.open(
-      `Pluviômetro '${element.descricao}' excluído.`,
-      "Fechar",
-      { duration: 3000 }
-    );
+    this.isLoading = true;
+    this.equipmentService.deleteEquipment(element.id)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: () => {
+          this.snackBar.open(`Pluviômetro '${element.descricao}' excluído.`, 'Fechar', { duration: 3000 });
+          this.loadPluviometros(); // Refresh the table
+        },
+        error: err => {
+            this.snackBar.open(`Erro ao excluir: ${err.message}`, 'Fechar', { duration: 5000 });
+        }
+    });
   }
 
   fazerMedicao(): void {

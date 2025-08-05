@@ -5,27 +5,55 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'; // Adicionado AbstractControl
-import { PluviometroElement } from '../owner/owner.component'; // Ajuste este caminho se necessário
-import { ViaCepResponse, ViaCepService } from '../../services/via-cep.service'; // Ajuste este caminho se necessário
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ViaCepResponse, ViaCepService } from '../../services/via-cep.service';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter, switchMap, takeUntil, tap, catchError } from 'rxjs/operators';
+
+// --- DEFINE OR IMPORT THE INTERFACE HERE ---
+// This interface should be identical to the one in owner.component.ts
+export interface PluviometroElement {
+  id: number;
+  proprietarioNome: string;
+  email: string;
+  descricao: string;
+  cep: string;
+  cidade: string;
+  bairro: string;
+  rua: string;
+  numero: string;
+  complemento?: string;
+  localizacaoIcon: string;
+  // --- ADD THE MISSING PROPERTY ---
+  proprietarioAvatarUrl?: string; 
+}
+
 
 export interface PluviometroFormData {
   pluviometro?: PluviometroElement;
   isEditMode: boolean;
 }
 
+// This interface defines the data that the form returns.
+// It's a good practice to separate the form's output from the full element.
+export interface PluviometroFormResult {
+  proprietarioNome: string;
+  email: string;
+  descricao: string;
+  cep: string;
+  cidade: string;
+  bairro: string;
+  rua: string;
+  numero: string;
+  complemento?: string;
+}
+
 @Component({
   selector: 'app-pluviometro-form',
   standalone: true,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule
+    CommonModule, ReactiveFormsModule, MatDialogModule, MatFormFieldModule,
+    MatInputModule, MatButtonModule
   ],
   templateUrl: './pluviometro-form.component.html',
   styleUrls: ['./pluviometro-form.component.scss']
@@ -38,7 +66,7 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    public dialogRef: MatDialogRef<PluviometroFormComponent>,
+    public dialogRef: MatDialogRef<PluviometroFormComponent, PluviometroFormResult>, // <-- Note the return type
     @Inject(MAT_DIALOG_DATA) public data: PluviometroFormData,
     private viaCepService: ViaCepService
   ) {
@@ -49,7 +77,7 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
       proprietarioNome: [data.pluviometro?.proprietarioNome || '', Validators.required],
       email: [data.pluviometro?.email || '', [Validators.required, Validators.email]],
       descricao: [data.pluviometro?.descricao || '', Validators.required],
-      localizacao: [data.pluviometro?.cep || '', [Validators.required, Validators.pattern(/^\d{5}-?\d{3}$/)]],
+      cep: [data.pluviometro?.cep || '', [Validators.required, Validators.pattern(/^\d{5}-?\d{3}$/)]],
       cidade: [{ value: data.pluviometro?.cidade || '', disabled: true }, Validators.required],
       bairro: [{ value: data.pluviometro?.bairro || '', disabled: true }, Validators.required],
       rua: [{ value: data.pluviometro?.rua || '', disabled: true }, Validators.required],
@@ -62,13 +90,8 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
     this.setupCepLookup();
 
     if (this.isEditMode && this.data.pluviometro) {
-      if (this.data.pluviometro.cep && this.pluviometroForm.get('localizacao')) {
-         const cepValue = this.data.pluviometro.cep;
-         if (/^\d{8}$/.test(cepValue)) {
-            this.pluviometroForm.get('localizacao')?.setValue(`${cepValue.substring(0,5)}-${cepValue.substring(5)}`);
-         } else {
-            this.pluviometroForm.get('localizacao')?.setValue(cepValue);
-         }
+      if (this.data.pluviometro.cep) {
+        this.pluviometroForm.get('cep')?.setValue(this.data.pluviometro.cep);
       }
       if (this.data.pluviometro.cidade) this.pluviometroForm.get('cidade')?.enable();
       if (this.data.pluviometro.bairro) this.pluviometroForm.get('bairro')?.enable();
@@ -77,43 +100,28 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
   }
 
   private setupCepLookup(): void {
-    const cepControl: AbstractControl | null = this.pluviometroForm.get('localizacao');
+    const cepControl: AbstractControl | null = this.pluviometroForm.get('cep');
     if (cepControl) {
       cepControl.valueChanges.pipe(
         takeUntil(this.destroy$),
         debounceTime(700),
         distinctUntilChanged(),
-        filter((cepInput: string) => {
-          if (!cepInput) return false;
-          const numericCep = cepInput.toString().replace(/\D/g, '');
-          return numericCep.length === 8;
-        }),
+        filter((cepInput: string) => !!(cepInput && cepInput.replace(/\D/g, '').length === 8)),
         switchMap((cepInput: string) => {
-          const numericCep = cepInput.toString().replace(/\D/g, '');
           this.clearAddressFields(false);
-          return this.viaCepService.buscarCep(numericCep);
+          return this.viaCepService.buscarCep(cepInput.replace(/\D/g, ''));
         }),
-        // =========================================================================
-        // AQUI ESTÁ A CORREÇÃO:
-        // O tipo de 'addressData' deve ser 'ViaCepResponse | null' para corresponder
-        // ao que o serviço pode retornar (os dados do endereço ou nulo).
-        // =========================================================================
         tap((addressData: ViaCepResponse | null) => {
-          if (addressData) {
+          if (addressData && !addressData.erro) {
             this.fillAddressFields(addressData);
-            if (cepControl.hasError('cepNaoEncontrado')) {
-              const errors = { ...cepControl.errors };
-              delete errors['cepNaoEncontrado'];
-              cepControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
-            }
+            cepControl.setErrors(null);
           } else {
             this.clearAddressFields(true);
             cepControl.setErrors({ cepNaoEncontrado: true });
           }
         }),
         catchError(error => {
-          console.error("Erro crítico no fluxo de busca de CEP:", error);
-          this.clearAddressFields(true);
+          console.error("Erro no fluxo de busca de CEP:", error);
           cepControl.setErrors({ cepConsultaFalhou: true });
           return of(null);
         })
@@ -127,21 +135,14 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
       bairro: data.bairro,
       rua: data.logradouro,
     });
-    this.pluviometroForm.get('cidade')?.enable();
-    this.pluviometroForm.get('bairro')?.enable();
-    this.pluviometroForm.get('rua')?.enable();
   }
 
-  clearAddressFields(disableFields: boolean = true): void {
-    this.pluviometroForm.patchValue({
-      cidade: '',
-      bairro: '',
-      rua: '',
-    });
-    if (disableFields) {
-      this.pluviometroForm.get('cidade')?.disable();
-      this.pluviometroForm.get('bairro')?.disable();
-      this.pluviometroForm.get('rua')?.disable();
+  clearAddressFields(resetAndDisable: boolean = true): void {
+    this.pluviometroForm.patchValue({ cidade: '', bairro: '', rua: '' });
+    if (resetAndDisable) {
+        this.pluviometroForm.get('cidade')?.disable();
+        this.pluviometroForm.get('bairro')?.disable();
+        this.pluviometroForm.get('rua')?.disable();
     }
   }
 
@@ -156,20 +157,9 @@ export class PluviometroFormComponent implements OnInit, OnDestroy {
 
   onSave(): void {
     if (this.pluviometroForm.valid) {
-      const formData = this.pluviometroForm.getRawValue();
-      let resultData: Partial<PluviometroElement> = {
-        ...formData,
-        localizacao: formData.localizacao.toString().replace(/\D/g, ''),
-      };
-      if (this.isEditMode && this.data.pluviometro) {
-        resultData.id = this.data.pluviometro.id;
-        resultData.proprietarioAvatarUrl = this.data.pluviometro.proprietarioAvatarUrl;
-        resultData.localizacaoIcon = this.data.pluviometro.localizacaoIcon;
-      } else {
-        resultData.id = Date.now();
-        resultData.localizacaoIcon = 'map';
-      }
-      this.dialogRef.close(resultData);
+      // Return only the raw form values. The parent component will handle adding IDs.
+      const result: PluviometroFormResult = this.pluviometroForm.getRawValue();
+      this.dialogRef.close(result);
     } else {
       this.pluviometroForm.markAllAsTouched();
     }
