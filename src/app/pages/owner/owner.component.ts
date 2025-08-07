@@ -10,8 +10,8 @@ import { MatDialog, MatDialogModule } from "@angular/material/dialog";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Subject } from "rxjs";
-import { takeUntil, finalize } from "rxjs/operators";
+import { Subject, forkJoin, of } from "rxjs";
+import { takeUntil, finalize, catchError } from "rxjs/operators";
 
 // Imports para exportação
 import jsPDF from 'jspdf';
@@ -23,6 +23,7 @@ import { PluviometroFormComponent, PluviometroFormData, PluviometroFormResult } 
 import { MedicaoFormComponent, MedicaoFormData } from "../medicao-form/medicao-form.component";
 import { MeasurementService } from "../../services/measurement.service";
 import { MedicoesListComponent, MedicoesListData } from "../medicoes-list/medicoes-list.component";
+import { MeasurementRecordDTO } from "../../models/measurement-record.dto";
 
 // Modelo de visualização para a sua tabela.
 export interface PluviometroElement {
@@ -37,6 +38,16 @@ export interface PluviometroElement {
   rua: string;
   numero: string;
   complemento?: string;
+}
+
+// Nova interface para a estrutura de dados achatada para exportação
+interface DadosExportacao {
+  proprietarioNome: string;
+  descricaoPluviometro: string;
+  cidade: string;
+  dataHoraMedicao: string; // Mantido como string para simplicidade
+  valorMedicao: string;
+  nivelPerigo: string;
 }
 
 @Component({
@@ -56,9 +67,7 @@ export class OwnerComponent implements OnInit, OnDestroy {
   selection = new SelectionModel<PluviometroElement>(true, []);
   isLoading = true;
 
-  // ID do usuário logado.
   private loggedInOwnerId: number = 2;
-
   private destroy$ = new Subject<void>();
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
@@ -141,7 +150,6 @@ export class OwnerComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe((result: PluviometroFormResult | undefined) => {
       if (!result) return;
-
       const payload: CreateEquipmentPayload = {
         ownerId: this.loggedInOwnerId,
         description: result.description,
@@ -154,7 +162,6 @@ export class OwnerComponent implements OnInit, OnDestroy {
           neighborhood: result.bairro,
         },
       };
-
       if (isEditMode && pluviometro) {
         this.updatePluviometro(pluviometro.id, payload);
       } else {
@@ -246,50 +253,107 @@ export class OwnerComponent implements OnInit, OnDestroy {
       this.snackBar.open('Por favor, selecione ao menos um item para exportar.', 'Fechar', { duration: 3000 });
       return;
     }
-    const dadosSelecionados = this.selection.selected;
-    if (format === 'csv') {
-      this.exportarParaCSV(dadosSelecionados);
-    } else if (format === 'pdf') {
-      this.exportarParaPDF(dadosSelecionados);
-    }
+
+    this.isLoading = true;
+    const pluviometrosSelecionados = this.selection.selected;
+    const requests = pluviometrosSelecionados.map(pluviometro =>
+      this.measurementService.getMeasurementsByEquipmentId(pluviometro.id).pipe(
+        catchError(() => of([] as MeasurementRecordDTO[]))
+      )
+    );
+
+    forkJoin(requests).pipe(
+      takeUntil(this.destroy$),
+      finalize(() => this.isLoading = false)
+    ).subscribe(todasAsMedicoes => {
+      const dadosParaExportar: DadosExportacao[] = [];
+      pluviometrosSelecionados.forEach((pluviometro, index) => {
+        const medicoesDoPluviometro = todasAsMedicoes[index];
+        if (medicoesDoPluviometro && medicoesDoPluviometro.length > 0) {
+          medicoesDoPluviometro.forEach(medicao => {
+            dadosParaExportar.push({
+              proprietarioNome: pluviometro.proprietarioNome,
+              descricaoPluviometro: pluviometro.descricao,
+              cidade: pluviometro.cidade,
+              dataHoraMedicao: new Date(medicao.measurementDateTime).toLocaleString('pt-BR'),
+              valorMedicao: medicao.measurementValue,
+              nivelPerigo: medicao.danger || 'N/A'
+            });
+          });
+        } else {
+          dadosParaExportar.push({
+            proprietarioNome: pluviometro.proprietarioNome,
+            descricaoPluviometro: pluviometro.descricao,
+            cidade: pluviometro.cidade,
+            dataHoraMedicao: 'Nenhuma medição encontrada',
+            valorMedicao: 'N/A',
+            nivelPerigo: 'N/A'
+          });
+        }
+      });
+
+      if (dadosParaExportar.length === 0) {
+        this.snackBar.open('Nenhum dado encontrado para exportar.', 'Fechar', { duration: 3000 });
+        return;
+      }
+      
+      if (format === 'csv') {
+        this.exportarParaCSV(dadosParaExportar);
+      } else if (format === 'pdf') {
+        this.exportarParaPDF(dadosParaExportar);
+      }
+    });
   }
 
-  private exportarParaCSV(dados: PluviometroElement[]): void {
+  private exportarParaCSV(dados: DadosExportacao[]): void {
     const cabecalho = [
-      'ID Pluviometro', 'Proprietario', 'Email', 'Descricao', 'CEP',
-      'Cidade', 'Bairro', 'Rua', 'Numero', 'Complemento'
+      'Proprietario', 'Descricao do Pluviometro', 'Cidade',
+      'Data e Hora da Medicao', 'Valor (mm)', 'Nivel de Perigo'
     ];
-    const linhas = dados.map(p => [
-      p.id, p.proprietarioNome, p.email, `"${p.descricao.replace(/"/g, '""')}"`,
-      p.cep, p.cidade, p.bairro, p.rua, p.numero, p.complemento || ''
+    
+    const linhas = dados.map(d => [
+      `"${d.proprietarioNome}"`,
+      `"${d.descricaoPluviometro}"`,
+      `"${d.cidade}"`,
+      `"${d.dataHoraMedicao}"`,
+      d.valorMedicao,
+      d.nivelPerigo
     ].join(','));
+
     const csvContent = [cabecalho.join(','), ...linhas].join('\n');
     const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `pluviometros_export_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `relatorio_pluviometros_medicoes_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    this.snackBar.open(`${dados.length} item(s) exportado(s) para CSV com sucesso!`, 'Fechar', { duration: 3000 });
+    this.snackBar.open(`${this.selection.selected.length} pluviômetro(s) exportado(s) para CSV!`, 'Fechar', { duration: 3000 });
   }
 
-  private exportarParaPDF(dados: PluviometroElement[]): void {
+  private exportarParaPDF(dados: DadosExportacao[]): void {
     const doc = new jsPDF();
-    const cabecalho = [['Proprietario', 'Descricao', 'Cidade', 'Rua', 'Numero']];
-    const corpo = dados.map(p => [
-      p.proprietarioNome, p.descricao, p.cidade, p.rua, p.numero
+    const cabecalho = [['Proprietário', 'Pluviômetro', 'Data/Hora', 'Valor (mm)', 'Perigo']];
+    
+    const corpo = dados.map(d => [
+      d.proprietarioNome,
+      d.descricaoPluviometro,
+      d.dataHoraMedicao,
+      d.valorMedicao,
+      d.nivelPerigo
     ]);
+
     autoTable(doc, {
       head: cabecalho,
       body: corpo,
       didDrawPage: (data) => {
-        doc.setFontSize(20);
-        doc.text('Relatório de Pluviômetros', data.settings.margin.left, 15);
+        doc.setFontSize(18);
+        doc.text('Relatório de Medições por Pluviômetro', data.settings.margin.left, 15);
       }
     });
-    doc.save(`pluviometros_export_${new Date().toISOString().slice(0, 10)}.pdf`);
-    this.snackBar.open(`${dados.length} item(s) exportado(s) para PDF com sucesso!`, 'Fechar', { duration: 3000 });
+
+    doc.save(`relatorio_pluviometros_medicoes_${new Date().toISOString().slice(0, 10)}.pdf`);
+    this.snackBar.open(`${this.selection.selected.length} pluviômetro(s) exportado(s) para PDF!`, 'Fechar', { duration: 3000 });
   }
 }
