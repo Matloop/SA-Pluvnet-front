@@ -21,6 +21,24 @@
       >
         <mat-icon>timeline</mat-icon> Fazer medição
       </button>
+      <button
+    mat-stroked-button
+    [matMenuTriggerFor]="exportMenu"
+    [disabled]="!selection.hasValue()"
+    matTooltip="Exportar dados dos itens selecionados"
+  >
+    <mat-icon>download</mat-icon> Exportar
+  </button>
+  <mat-menu #exportMenu="matMenu">
+    <button mat-menu-item (click)="exportarDados('csv')">
+      <mat-icon>description</mat-icon>
+      <span>Exportar para CSV</span>
+    </button>
+    <button mat-menu-item (click)="exportarDados('pdf')">
+      <mat-icon>picture_as_pdf</mat-icon>
+      <span>Exportar para PDF</span>
+    </button>
+  </mat-menu>
     </div>
   </header>
 

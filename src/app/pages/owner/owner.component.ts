@@ -13,14 +13,18 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Subject } from "rxjs";
 import { takeUntil, finalize } from "rxjs/operators";
 
-// Import all the necessary services and interfaces
+// Imports para exportação
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+// Import de todos os serviços e interfaces necessários
 import { EquipmentService, EquipmentDTO, CreateEquipmentPayload } from '../../services/equipment.service';
 import { PluviometroFormComponent, PluviometroFormData, PluviometroFormResult } from "../pluviometro-form/pluviometro-form.component";
-import { MedicaoFormComponent, MedicaoFormData } from "../medicao-form/medicao-form.component"; // Assuming MedicaoForm exists
+import { MedicaoFormComponent, MedicaoFormData } from "../medicao-form/medicao-form.component";
 import { MeasurementService } from "../../services/measurement.service";
 import { MedicoesListComponent, MedicoesListData } from "../medicoes-list/medicoes-list.component";
 
-// This is the VIEW MODEL for your table. It flattens the DTO for easy display.
+// Modelo de visualização para a sua tabela.
 export interface PluviometroElement {
   id: number;
   ownerId: number;
@@ -52,11 +56,8 @@ export class OwnerComponent implements OnInit, OnDestroy {
   selection = new SelectionModel<PluviometroElement>(true, []);
   isLoading = true;
 
-  // --- THE CRITICAL FIX ---
-  // This now represents the ID of the user who is currently logged in and viewing this page.
-  // We will use this ID for BOTH loading data AND creating new data.
-  // Set this to the ID of an owner that exists in your database (e.g., 1 or 2).
-  private loggedInOwnerId: number = 2; // Make sure Owner with ID 2 exists in your DB
+  // ID do usuário logado.
+  private loggedInOwnerId: number = 2;
 
   private destroy$ = new Subject<void>();
   private dialog = inject(MatDialog);
@@ -106,7 +107,7 @@ export class OwnerComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (dtos) => {
           this.dataSource.data = dtos.map(dto => this.mapDtoToViewModel(dto));
-          this.selection.clear(); // Clear selection after reloading data
+          this.selection.clear();
         },
         error: (err) => {
           console.error("Erro ao carregar pluviômetros:", err);
@@ -142,7 +143,7 @@ export class OwnerComponent implements OnInit, OnDestroy {
       if (!result) return;
 
       const payload: CreateEquipmentPayload = {
-        ownerId: this.loggedInOwnerId, // Use the consistent ID of the logged-in user
+        ownerId: this.loggedInOwnerId,
         description: result.description,
         address: {
           cep: result.cep.replace(/\D/g, ''),
@@ -223,17 +224,12 @@ export class OwnerComponent implements OnInit, OnDestroy {
   }
 
   verMedicoes(pluviometro: PluviometroElement): void {
-    // Dados a serem enviados para o diálogo
-    const dialogData: MedicoesListData = {
-      pluviometro: pluviometro
-    };
-
-    // Abrir o diálogo
+    const dialogData: MedicoesListData = { pluviometro: pluviometro };
     this.dialog.open(MedicoesListComponent, {
-      width: '700px',       // Uma largura maior para a tabela
-      maxWidth: '90vw',    // Garantir que funcione em telas menores
+      width: '700px',
+      maxWidth: '90vw',
       data: dialogData,
-      panelClass: 'medicoes-dialog-container' // Classe opcional para estilização global
+      panelClass: 'medicoes-dialog-container'
     });
   }
 
@@ -241,5 +237,59 @@ export class OwnerComponent implements OnInit, OnDestroy {
     const enderecoCompleto = `${element.rua}, ${element.numero}, ${element.bairro}, ${element.cidade}`;
     const url = `https://www.google.com/maps?q=${encodeURIComponent(enderecoCompleto)}`;
     window.open(url, "_blank");
+  }
+
+  // --- MÉTODOS DE EXPORTAÇÃO ---
+
+  exportarDados(format: 'csv' | 'pdf'): void {
+    if (this.selection.selected.length === 0) {
+      this.snackBar.open('Por favor, selecione ao menos um item para exportar.', 'Fechar', { duration: 3000 });
+      return;
+    }
+    const dadosSelecionados = this.selection.selected;
+    if (format === 'csv') {
+      this.exportarParaCSV(dadosSelecionados);
+    } else if (format === 'pdf') {
+      this.exportarParaPDF(dadosSelecionados);
+    }
+  }
+
+  private exportarParaCSV(dados: PluviometroElement[]): void {
+    const cabecalho = [
+      'ID Pluviometro', 'Proprietario', 'Email', 'Descricao', 'CEP',
+      'Cidade', 'Bairro', 'Rua', 'Numero', 'Complemento'
+    ];
+    const linhas = dados.map(p => [
+      p.id, p.proprietarioNome, p.email, `"${p.descricao.replace(/"/g, '""')}"`,
+      p.cep, p.cidade, p.bairro, p.rua, p.numero, p.complemento || ''
+    ].join(','));
+    const csvContent = [cabecalho.join(','), ...linhas].join('\n');
+    const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pluviometros_export_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.snackBar.open(`${dados.length} item(s) exportado(s) para CSV com sucesso!`, 'Fechar', { duration: 3000 });
+  }
+
+  private exportarParaPDF(dados: PluviometroElement[]): void {
+    const doc = new jsPDF();
+    const cabecalho = [['Proprietario', 'Descricao', 'Cidade', 'Rua', 'Numero']];
+    const corpo = dados.map(p => [
+      p.proprietarioNome, p.descricao, p.cidade, p.rua, p.numero
+    ]);
+    autoTable(doc, {
+      head: cabecalho,
+      body: corpo,
+      didDrawPage: (data) => {
+        doc.setFontSize(20);
+        doc.text('Relatório de Pluviômetros', data.settings.margin.left, 15);
+      }
+    });
+    doc.save(`pluviometros_export_${new Date().toISOString().slice(0, 10)}.pdf`);
+    this.snackBar.open(`${dados.length} item(s) exportado(s) para PDF com sucesso!`, 'Fechar', { duration: 3000 });
   }
 }
