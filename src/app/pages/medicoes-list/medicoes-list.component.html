@@ -1,0 +1,59 @@
+<h2 mat-dialog-title>Medições para {{ pluviometro.descricao }}</h2>
+
+<mat-dialog-content class="mat-typography">
+  <div class="content-wrapper">
+    <!-- Loading Spinner -->
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Carregando medições...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage && !isLoading" class="message-container error-message">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ errorMessage }}</p>
+    </div>
+
+    <!-- No Data Message -->
+    <div *ngIf="!isLoading && !errorMessage && dataSource.data.length === 0" class="message-container">
+      <mat-icon>info_outline</mat-icon>
+      <p>Nenhuma medição encontrada para este pluviômetro.</p>
+    </div>
+
+    <!-- Data Table -->
+    <div *ngIf="!isLoading && !errorMessage && dataSource.data.length > 0" class="table-container">
+      <table mat-table [dataSource]="dataSource">
+        <!-- Data e Hora da Medição -->
+        <ng-container matColumnDef="measurementDateTime">
+          <th mat-header-cell *matHeaderCellDef>Data e Hora</th>
+          <td mat-cell *matCellDef="let record">
+            {{ record.measurementDateTime | date:'dd/MM/yyyy HH:mm' }}
+          </td>
+        </ng-container>
+
+        <!-- Valor da Medição -->
+        <ng-container matColumnDef="measurementValue">
+          <th mat-header-cell *matHeaderCellDef>Valor (mm)</th>
+          <td mat-cell *matCellDef="let record">{{ record.measurementValue }} mm</td>
+        </ng-container>
+
+        <!-- Nível de Perigo -->
+        <ng-container matColumnDef="danger">
+          <th mat-header-cell *matHeaderCellDef>Nível de Perigo</th>
+          <td mat-cell *matCellDef="let record">
+             <span class="danger-badge" [ngClass]="getDangerClass(record.danger)">
+               {{ record.danger || 'N/A' }}
+             </span>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-flat-button color="primary" (click)="closeDialog()">Fechar</button>
+</mat-dialog-actions>

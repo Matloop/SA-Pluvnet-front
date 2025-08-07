@@ -1,0 +1,63 @@
+:host {
+  display: block;
+}
+
+.content-wrapper {
+  min-height: 250px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-container, .message-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.6);
+  text-align: center;
+  padding: 20px;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+  }
+}
+
+.error-message {
+  color: #f44336; // Cor de erro do Material
+}
+
+.table-container {
+  width: 100%;
+}
+
+table {
+  width: 100%;
+}
+
+// Estilos para os badges de nível de perigo
+.danger-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  color: #fff;
+  font-size: 0.8em;
+  text-transform: uppercase;
+}
+
+.danger-low {
+  background-color: #4CAF50; // Verde
+}
+
+.danger-medium {
+  background-color: #FFC107; // Amarelo
+  color: #000;
+}
+
+.danger-high {
+  background-color: #f44336; // Vermelho
+}

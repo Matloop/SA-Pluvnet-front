@@ -18,6 +18,7 @@ import { EquipmentService, EquipmentDTO, CreateEquipmentPayload } from '../../se
 import { PluviometroFormComponent, PluviometroFormData, PluviometroFormResult } from "../pluviometro-form/pluviometro-form.component";
 import { MedicaoFormComponent, MedicaoFormData } from "../medicao-form/medicao-form.component"; // Assuming MedicaoForm exists
 import { MeasurementService } from "../../services/measurement.service";
+import { MedicoesListComponent, MedicoesListData } from "../medicoes-list/medicoes-list.component";
 
 // This is the VIEW MODEL for your table. It flattens the DTO for easy display.
 export interface PluviometroElement {
@@ -222,7 +223,18 @@ export class OwnerComponent implements OnInit, OnDestroy {
   }
 
   verMedicoes(pluviometro: PluviometroElement): void {
-    this.snackBar.open(`Funcionalidade "Ver Medições" para '${pluviometro.descricao}' ainda não implementada.`, 'Fechar', { duration: 3000 });
+    // Dados a serem enviados para o diálogo
+    const dialogData: MedicoesListData = {
+      pluviometro: pluviometro
+    };
+
+    // Abrir o diálogo
+    this.dialog.open(MedicoesListComponent, {
+      width: '700px',       // Uma largura maior para a tabela
+      maxWidth: '90vw',    // Garantir que funcione em telas menores
+      data: dialogData,
+      panelClass: 'medicoes-dialog-container' // Classe opcional para estilização global
+    });
   }
 
   verLocalizacao(element: PluviometroElement): void {
