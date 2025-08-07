@@ -7,6 +7,8 @@ import { roleGuard } from './guards/role.guard';
 // Componentes para rotas específicas (sem lazy loading aqui)
 import { LoginComponent } from './pages/login/login.component';
 import { AuthCallbackComponent } from './components/auth-callback/auth-callback.component';
+import { CalendarioComponent } from './pages/calendario/calendario.component';
+import { AuthGuard } from './services/authguard.service';
 
 export const routes: Routes = [
     {
@@ -57,7 +59,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
         canActivate: [authGuard] // Qualquer usuário logado pode ver seu próprio perfil
     },
-    
+    {
+    path: 'calendario', // Rota para o calendário
+    component: CalendarioComponent,
+    canActivate: [authGuard]
+    },
 
     // --- ROTA CURINGA (WILD CARD) ---
     // Deve ser a última rota da lista. Redireciona qualquer URL não encontrada.

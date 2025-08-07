@@ -1,0 +1,89 @@
+.calendar-page-container {
+  padding: 24px;
+}
+
+.calendar-card {
+  max-width: 450px; // Um bom tamanho para um calendário
+  margin: 0 auto;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+// Estilos para o template customizado de cada célula de dia
+.calendar-day-cell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-sizing: border-box;
+  position: relative; // Para o :after
+
+  // Efeito sutil ao passar o mouse
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+// Classes de perigo que serão aplicadas pelo [ngClass]
+.danger-low {
+  background-color: #c8e6c9; // Verde claro
+  color: #1b5e20; // Texto verde escuro
+  font-weight: bold;
+}
+
+.danger-medium {
+  background-color: #fff9c4; // Amarelo claro
+  color: #f57f17; // Texto amarelo escuro
+  font-weight: bold;
+}
+
+.danger-high {
+  background-color: #ffcdd2; // Vermelho claro
+  color: #c62828; // Texto vermelho escuro
+  font-weight: bold;
+}
+
+// Como o ViewEncapsulation é 'None', podemos estilizar o componente filho diretamente.
+.mat-calendar-body-cell {
+  padding: 0 !important; // Remove o padding padrão para nossa célula preencher o espaço
+
+  // Remove o estilo padrão do botão do Material
+  .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+    background: none;
+    box-shadow: none;
+  }
+}
+
+// Estilos para a legenda
+.legend-container {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+
+  h3 {
+    margin-top: 0;
+    font-weight: 500;
+  }
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+
+  .legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+  }
+}
