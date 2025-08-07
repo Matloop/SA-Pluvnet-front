@@ -1,0 +1,44 @@
+<h2 mat-dialog-title>Medições de {{ data.date | date:'dd/MM/yyyy' }}</h2>
+
+<mat-dialog-content>
+  <div *ngIf="data.records.length === 0; else tableContainer" class="no-records">
+    <mat-icon>info_outline</mat-icon>
+    <p>Nenhuma medição encontrada para esta data.</p>
+  </div>
+
+  <ng-template #tableContainer>
+    <table mat-table [dataSource]="data.records">
+      <!-- Coluna Hora -->
+      <ng-container matColumnDef="time">
+        <th mat-header-cell *matHeaderCellDef> Hora </th>
+        <td mat-cell *matCellDef="let record"> {{ record.measurementDateTime | date:'HH:mm:ss' }} </td>
+      </ng-container>
+
+      <!-- Coluna Valor -->
+      <ng-container matColumnDef="value">
+        <th mat-header-cell *matHeaderCellDef> Valor (mm) </th>
+        <td mat-cell *matCellDef="let record"> {{ record.measurementValue }} mm </td>
+      </ng-container>
+
+      <!-- Coluna Perigo -->
+      <ng-container matColumnDef="danger">
+        <th mat-header-cell *matHeaderCellDef> Perigo </th>
+        <td mat-cell *matCellDef="let record"> {{ record.danger || 'N/A' }} </td>
+      </ng-container>
+
+      <!-- Coluna Pluviômetro/Equipamento -->
+      <ng-container matColumnDef="equipment">
+        <th mat-header-cell *matHeaderCellDef> Pluviômetro ID </th>
+        <td mat-cell *matCellDef="let record"> {{ record.equipmentID }} </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </ng-template>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-flat-button color="primary" (click)="close()">Fechar</button>
+</mat-dialog-actions>
