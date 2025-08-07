@@ -1413,17 +1413,6 @@ var ListKeyManager = class {
     }
   }
 };
-var ActiveDescendantKeyManager = class extends ListKeyManager {
-  setActiveItem(index) {
-    if (this.activeItem) {
-      this.activeItem.setInactiveStyles();
-    }
-    super.setActiveItem(index);
-    if (this.activeItem) {
-      this.activeItem.setActiveStyles();
-    }
-  }
-};
 var FocusKeyManager = class extends ListKeyManager {
   constructor() {
     super(...arguments);
@@ -5385,10 +5374,7 @@ export {
   ObserversModule,
   BreakpointObserver,
   Breakpoints,
-  addAriaReferencedId,
-  removeAriaReferencedId,
   AriaDescriber,
-  ActiveDescendantKeyManager,
   FocusKeyManager,
   InteractivityChecker,
   FocusTrapFactory,
@@ -5447,4 +5433,4 @@ export {
   MatRippleLoader,
   _MatInternalFormField
 };
-//# sourceMappingURL=chunk-AZV5BF7O.js.map
+//# sourceMappingURL=chunk-3Q7IOP3B.js.map
