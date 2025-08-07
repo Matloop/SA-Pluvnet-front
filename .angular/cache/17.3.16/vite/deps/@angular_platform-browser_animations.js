@@ -11,8 +11,8 @@ import {
   BrowserModule,
   DomRendererFactory2
 } from "./chunk-FJCJNGI5.js";
-import "./chunk-SVBXY4JE.js";
 import "./chunk-DWZGULHC.js";
+import "./chunk-SVBXY4JE.js";
 import {
   DOCUMENT
 } from "./chunk-3II4CH2V.js";

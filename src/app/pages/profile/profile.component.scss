@@ -1,0 +1,22 @@
+.profile-container {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-card {
+  max-width: 600px;
+  width: 100%;
+}
+
+.profile-avatar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0;
+
+  mat-icon {
+    transform: scale(1.8);
+    color: #673ab7;
+  }
+}

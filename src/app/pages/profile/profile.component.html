@@ -1,0 +1,37 @@
+<div class="profile-container">
+  <mat-card class="profile-card">
+    <mat-card-header>
+      <div mat-card-avatar class="profile-avatar">
+        <mat-icon>account_circle</mat-icon>
+      </div>
+      <mat-card-title>{{ authService.currentUser()?.name || 'Carregando...' }}</mat-card-title>
+      <mat-card-subtitle>{{ authService.currentUser()?.business_role | roleTranslate }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <h2>Detalhes do Usuário</h2>
+      <mat-list role="list">
+        <mat-list-item role="listitem">
+          <mat-icon matListItemIcon>key</mat-icon>
+          <div matListItemTitle>ID do Usuário</div>
+          <div matListItemLine>{{ authService.currentUser()?.userId }}</div>
+        </mat-list-item>
+        <!-- CORRIGIDO: Acessando o email através do 'sub' (subject do token) -->
+        <mat-list-item role="listitem">
+          <mat-icon matListItemIcon>email</mat-icon>
+          <div matListItemTitle>Email</div>
+          <div matListItemLine>{{ authService.currentUser()?.sub }}</div>
+        </mat-list-item>
+
+        <!-- CORRIGIDO: Acessando o ID através de 'userId' -->
+        
+        
+        <mat-list-item role="listitem">
+          <mat-icon matListItemIcon>badge</mat-icon>
+          <div matListItemTitle>Nome de Usuário (Login)</div>
+          <div matListItemLine>{{ authService.currentUser()?.sub }}</div>
+        </mat-list-item>
+
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+</div>
